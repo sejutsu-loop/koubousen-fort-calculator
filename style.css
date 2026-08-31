@@ -1,0 +1,972 @@
+:root{
+  --page:#d8d0bd;
+  --paper:#fffdf4;
+  --paper-soft:#fff8dc;
+  --line:#b59d73;
+  --line-soft:#d5c4a5;
+  --title1:#7c5b38;
+  --title2:#3f2b1a;
+  --brown:#5b2c12;
+  --text:#2b241b;
+  --red:#b70000;
+  --blue:#0b3c88;
+  --ok:#137a2d;
+  --ng:#b71717;
+  --manual:#eaf4ff;
+  --preset:#eee7d7;
+  --optional:#fff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--page);
+  color:var(--text);
+  font-family:Meiryo,"Hiragino Kaku Gothic ProN",system-ui,sans-serif;
+  font-size:13px;
+}
+#container{
+  width:1120px;
+  max-width:calc(100vw - 24px);
+  margin:12px auto 28px;
+}
+#whiteWrapper{
+  background:#fff;
+  border:1px solid #a89977;
+  box-shadow:0 2px 8px #0003;
+  padding:10px;
+}
+#gray02Wrapper{
+  background:linear-gradient(#f8f8f8,#e3e1da);
+  border:1px solid #b6aa90;
+  padding:10px;
+  overflow:hidden;
+}
+h1,h2,h3{margin:0}
+.game-title{
+  height:34px;
+  line-height:34px;
+  color:#fff;
+  font-size:18px;
+  padding-left:14px;
+  border:1px solid #3b2a1b;
+  background:linear-gradient(var(--title1),var(--title2));
+  text-shadow:1px 1px 0 #000;
+  border-radius:3px;
+}
+.game-title .version{
+  float:right;
+  font-size:12px;
+  font-weight:normal;
+  margin-right:10px;
+  color:#ffe28a;
+}
+button,input,select{
+  font-family:inherit;
+  font-size:12px;
+}
+input[type=text],
+input[type=number],
+select{
+  border:1px solid #9b8b70;
+  border-radius:3px;
+  background:#fff;
+  height:24px;
+  padding:2px 5px;
+}
+button{
+  border:1px solid #7e6548;
+  border-radius:3px;
+  background:linear-gradient(#fff9df,#d9c28c);
+  color:#3a2716;
+  padding:5px 10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+button:hover{filter:brightness(.97)}
+.row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  margin:6px 0;
+}
+.labelbox{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  background:#fffaf0;
+  border:1px solid #d0bea1;
+  padding:3px 6px;
+  border-radius:4px;
+}
+.usage-guide,
+.input-guide{
+  margin:8px 0 6px;
+  padding:7px 9px;
+  border:1px solid #b9a372;
+  background:#fffef4;
+  font-size:12px;
+  line-height:1.45;
+}
+.usage-title{
+  font-weight:bold;
+  color:var(--brown);
+  margin-bottom:3px;
+}
+.usage-guide ol{
+  margin:0;
+  padding-left:20px;
+}
+.usage-guide li{margin:2px 0}
+.input-guide{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+  background:var(--paper-soft);
+}
+.swatch{
+  display:inline-block;
+  width:12px;
+  height:12px;
+  border:1px solid #999;
+  vertical-align:-2px;
+  margin-right:3px;
+}
+.swatch.req{background:var(--manual)}
+.swatch.auto{background:var(--preset)}
+.swatch.opt{background:var(--optional)}
+
+.battle-area{
+  display:block;
+  margin-top:8px;
+}
+.battle-unit-info,
+.stage-info,
+.enemy-info,
+.control-box{
+  background:var(--paper);
+  border:1px solid var(--line);
+  padding:8px;
+}
+.attack-bulk-bar{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:0 0 6px;
+  padding:6px 8px;
+  border:1px solid var(--line);
+  background:var(--paper-soft);
+  font-size:12px;
+}
+.attack-bulk-bar .bulk-title{
+  font-weight:bold;
+  color:var(--brown);
+  margin-right:4px;
+}
+.attack-bulk-bar label{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.attack-bulk-bar select{
+  min-width:92px;
+}
+.attack-bulk-bar button{
+  height:24px;
+  padding:2px 8px;
+}
+
+.pattern-controls,
+.schedule-controls{
+  margin:0 0 8px;
+  padding:7px 8px;
+  border:1px solid var(--line);
+  background:var(--paper-soft);
+  font-size:12px;
+}
+.pattern-tabs{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:5px;
+  align-items:center;
+  margin-bottom:6px;
+}
+.pattern-tab.active{
+  box-shadow:0 0 0 2px #b70000 inset;
+  background:linear-gradient(#fff3bd,#d9a84c);
+}
+.pattern-name-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  align-items:center;
+}
+.pattern-name-row input{width:150px;}
+.schedule-grid{
+  display:grid;
+  grid-template-columns:repeat(10,minmax(72px,1fr));
+  gap:4px;
+  margin-top:5px;
+}
+.schedule-slot{
+  min-width:72px;
+  border:1px solid #bca87f;
+  background:#fffaf0;
+  padding:4px 3px;
+  text-align:center;
+}
+.schedule-slot b{
+  display:block;
+  font-size:12px;
+  line-height:1.1;
+  white-space:nowrap;
+}
+.schedule-slot select{
+  width:100%;
+  height:24px;
+  font-size:12px;
+  margin-top:2px;
+}
+.pattern-note{
+  color:#6b4a24;
+  font-size:11px;
+  line-height:1.35;
+  margin-top:4px;
+}
+
+.deck-strip{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+}
+.deck-card-area{
+  min-width:0;
+  background:#fffdf4;
+  border:1px solid var(--line);
+}
+.deck-card-area.active{box-shadow:0 0 0 2px #db3 inset}
+.deck-header{
+  height:28px;
+  line-height:28px;
+  color:#fff;
+  background:linear-gradient(#777,#4a4a4a);
+  text-align:center;
+  font-weight:bold;
+  border-bottom:1px solid #333;
+}
+.card-unit{
+  min-height:112px;
+  padding:6px;
+  text-align:center;
+  background:#fbf7e8;
+}
+.busyo-icon,
+.unit-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:42px;
+  height:42px;
+  border:1px solid #8d6b42;
+  border-radius:4px;
+  vertical-align:middle;
+}
+.busyo-icon{
+  background:linear-gradient(135deg,#d4b267,#794b1f);
+  margin-right:3px;
+  position:relative;
+}
+.busyo-icon::after{
+  content:"将";
+  color:white;
+  font-weight:bold;
+  text-shadow:1px 1px #000;
+  font-size:16px;
+}
+.unit-icon{
+  background:linear-gradient(#f5df9f,#c58b2b);
+  font-weight:bold;
+  color:#40260f;
+}
+.attack-inputs{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:5px;
+  margin-top:6px;
+  font-size:12px;
+}
+.attack-inputs label{
+  display:grid;
+  grid-template-columns:66px minmax(0,1fr);
+  align-items:center;
+  gap:5px;
+}
+.attack-inputs input,
+.attack-inputs select{
+  width:100%;
+  min-width:0;
+  height:25px;
+}
+.power-info{
+  margin-top:6px;
+  border-top:1px solid #d4c19b;
+  padding-top:5px;
+}
+.power-info .main{
+  color:var(--red);
+  font-size:13px;
+  font-weight:bold;
+  text-align:right;
+  height:25px;
+  line-height:20px;
+  background:var(--preset);
+  border:1px solid #d4c19b;
+  padding:2px 5px;
+  border-radius:3px;
+}
+.power-info .sub{
+  font-size:10px;
+  color:#666;
+  text-align:right;
+}
+
+.stage-panel{
+  display:grid;
+  grid-template-columns:360px minmax(0,1fr) 170px;
+  gap:8px;
+  align-items:start;
+  margin-top:8px;
+}
+.quick-controls{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:6px;
+  margin-bottom:8px;
+  padding:6px;
+  border:1px solid var(--line-soft);
+  background:var(--paper-soft);
+}
+.quick-controls label{
+  display:grid;
+  grid-template-columns:86px auto;
+  justify-content:start;
+  align-items:center;
+  gap:4px;
+  font-size:12px;
+}
+.quick-controls .check-label{
+  display:flex;
+  gap:5px;
+  align-items:center;
+}
+.unit-input{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.unit-input input.small{
+  width:64px;
+  min-width:64px;
+  text-align:right;
+}
+
+.auto-set-count{
+  display:inline-block;
+  min-width:64px;
+  text-align:right;
+  font-weight:bold;
+  color:var(--blue);
+  background:var(--preset);
+  border:1px solid #d4c19b;
+  border-radius:3px;
+  padding:3px 6px;
+  line-height:16px;
+}
+.stage-name{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  font-size:14px;
+  color:var(--brown);
+  font-weight:bold;
+  border-bottom:1px solid var(--line-soft);
+  padding-bottom:4px;
+  margin-bottom:6px;
+}
+.stage-name .mode-sub,
+.stage-name .lock-note{
+  font-size:11px;
+  margin-left:8px;
+  font-weight:normal;
+}
+.stage-name .mode-sub{color:#7b5631}
+.stage-name .lock-note{color:#8a4a00}
+.weather{
+  width:100%;
+  display:inline-flex;
+  gap:4px;
+  align-items:center;
+  justify-content:space-between;
+  padding:2px 6px;
+  border:1px solid #ccc;
+  background:#f3fbff;
+  border-radius:4px;
+}
+.weather select{width:130px}
+.defense-info{
+  display:grid;
+  grid-template-columns:76px minmax(0,1fr);
+  gap:4px;
+  align-items:center;
+  margin:4px 0;
+  font-size:12px;
+}
+.defense-info input.small{
+  width:64px;
+  text-align:right;
+}
+.defense-power{
+  color:var(--blue);
+  font-weight:bold;
+  text-align:right;
+  background:var(--preset);
+  border:1px solid #9b8b70;
+  border-radius:3px;
+  padding:3px 6px;
+  min-height:24px;
+  white-space:nowrap;
+  overflow:visible;
+  text-overflow:clip;
+  font-size:13px;
+}
+.enemy-info-title{
+  font-weight:bold;
+  color:#4d2d16;
+  margin-bottom:5px;
+}
+.enemy-input-table{
+  border-collapse:collapse;
+  table-layout:fixed;
+  width:100%;
+  font-size:12px;
+}
+.enemy-input-table th,
+.enemy-input-table td{
+  border:1px solid var(--line-soft);
+  padding:3px;
+  background:#fffef8;
+  text-align:center;
+  height:36px;
+}
+.enemy-input-table th{
+  background:#ead9b8;
+  color:#4f2c0c;
+}
+.enemy-input-table th:nth-child(1),
+.enemy-input-table td:nth-child(1){width:40px}
+.enemy-input-table th:nth-child(2),
+.enemy-input-table td:nth-child(2){width:68px}
+.enemy-input-table th:nth-child(3),
+.enemy-input-table td:nth-child(3){width:170px}
+.enemy-input-table select{
+  width:78px;
+  height:25px;
+}
+.enemy-input-table .defTroops{
+  width:154px;
+  min-width:154px;
+  max-width:154px;
+  margin-left:auto;
+  display:block;
+  text-align:right;
+  height:27px;
+  font-size:14px;
+}
+
+.preset-side{
+  width:170px;
+}
+.section-title{
+  margin-top:10px;
+  padding:6px 8px;
+  color:#fff;
+  background:linear-gradient(#87643d,#5a3d24);
+  border:1px solid #3b2819;
+  font-size:13px;
+  font-weight:bold;
+}
+.preset-side .section-title{
+  margin-top:0;
+}
+.preset-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:5px;
+  margin-top:6px;
+}
+.preset-grid button,
+.preset-mini-actions button{
+  width:100%;
+  height:28px;
+  min-height:28px;
+  padding:4px;
+  font-size:12px;
+  font-weight:bold;
+  line-height:1.15;
+  white-space:nowrap;
+}
+.preset-mini-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+}
+
+.item-grid{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(60px,1fr));
+  gap:4px;
+}
+.item-day{
+  min-width:60px;
+  border:1px solid #bca87f;
+  background:#fffaf0;
+  padding:4px 3px;
+  text-align:center;
+}
+.item-day b{
+  display:block;
+  font-size:12px;
+  line-height:1.1;
+  white-space:nowrap;
+}
+.item-day select{
+  width:100%;
+  height:24px;
+  font-size:12px;
+  margin-top:2px;
+}
+.summary-box{
+  background:#fff7d8;
+  border:1px solid #c9aa5f;
+  padding:8px;
+  line-height:1.55;
+  min-height:74px;
+}
+.scroll{
+  max-height:440px;
+  overflow:auto;
+  border:1px solid #c8b896;
+  background:#fff;
+  margin-top:6px;
+}
+.common-table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  margin-top:8px;
+  font-size:12px;
+}
+.common-table th{
+  background:linear-gradient(#7a6040,#4f3824);
+  color:#fff;
+  border:1px solid #3c2a1c;
+  padding:5px 4px;
+  text-align:center;
+}
+.common-table td{
+  border:1px solid #c9b998;
+  padding:4px;
+  text-align:right;
+  white-space:nowrap;
+}
+.common-table td.left{text-align:left}
+.common-table tr:nth-child(even) td{background:#fbf7eb}
+.ok{color:var(--ok);font-weight:bold}
+.ng{color:var(--ng);font-weight:bold}
+.footer-note{
+  margin-top:12px;
+  padding:7px 9px;
+  border:1px solid #b9a372;
+  background:#fffef4;
+  color:#5d5140;
+  font-size:11px;
+  line-height:1.5;
+}
+
+/* 入力状態 */
+.required-input.enabled-input{background:var(--manual)!important}
+.required-input:not(.enabled-input){background:#fff!important}
+.preset-filled,
+.preset-filled:disabled{background:var(--preset)!important}
+.optional-input{background:#fff!important}
+.locked-input,
+.locked-input:disabled{
+  background:#e6ddc9!important;
+  color:#4d3b22!important;
+  border-color:#b59d73!important;
+  opacity:1!important;
+  cursor:not-allowed;
+}
+
+
+/* 攻防戦砦・天兵対応 */
+.event-tools{
+  margin-top:8px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:8px;
+}
+.event-tool-box{
+  background:var(--paper);
+  border:1px solid var(--line);
+  padding:8px;
+}
+.heavenly-scroll{
+  overflow:auto;
+  border:1px solid var(--line-soft);
+  background:#fff;
+}
+.heavenly-table{
+  width:100%;
+  min-width:850px;
+  border-collapse:collapse;
+  table-layout:fixed;
+  font-size:11px;
+}
+.heavenly-table th,
+.heavenly-table td{
+  border:1px solid var(--line-soft);
+  padding:3px;
+  text-align:center;
+  white-space:nowrap;
+}
+.heavenly-table th{
+  background:#ead9b8;
+  color:#4f2c0c;
+}
+.heavenly-table input{
+  width:68px;
+  height:24px;
+  text-align:right;
+}
+.heavenly-table .unit-name{
+  width:92px;
+  font-weight:bold;
+  background:#fffaf0;
+}
+.event-note{
+  margin-top:5px;
+  color:#6b4a24;
+  font-size:11px;
+  line-height:1.4;
+}
+.fort-preset-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:5px;
+  margin:6px 0;
+}
+.fort-preset-grid button{width:100%}
+.virtual-fort-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:5px;
+  margin-top:6px;
+}
+.virtual-fort-slot{
+  border:1px solid #bca87f;
+  background:#fffaf0;
+  padding:5px;
+  min-width:0;
+}
+.virtual-fort-slot b{
+  display:block;
+  margin-bottom:4px;
+  color:var(--brown);
+}
+.virtual-fort-slot input{
+  width:100%;
+  margin-bottom:4px;
+}
+.virtual-fort-actions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:3px;
+}
+.virtual-fort-actions button{
+  padding:4px 2px;
+  font-size:11px;
+}
+.fort-meta-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  margin:5px 0;
+}
+.fort-meta-row label{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.fort-meta-row input{
+  width:120px;
+  text-align:right;
+}
+.attack-bulk-bar input.bulk-troops{
+  width:88px;
+  height:24px;
+  text-align:right;
+}
+
+
+.attack-input-note{
+  margin:0 0 6px;
+  padding:5px 7px;
+  border:1px solid #d1bd91;
+  background:#fffaf0;
+  color:#6b4a24;
+  font-size:11px;
+  line-height:1.4;
+}
+.atkPower.auto-calculated{
+  background:var(--preset)!important;
+}
+.attack-mode-note{
+  margin-top:3px;
+  color:#76552e;
+  font-size:10px;
+  min-height:13px;
+}
+.attack-up-compact{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:8px;
+  padding:5px 8px;
+  border:1px solid var(--line);
+  background:var(--paper-soft);
+  font-size:12px;
+}
+.attack-up-title{font-weight:bold;color:var(--brown);margin-right:2px}
+.boost-toggle{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:2px 6px;
+  border:1px solid #c8b58d;
+  background:#fffdf4;
+  border-radius:3px;
+  cursor:pointer;
+}
+.boost-toggle input{margin:0}
+.boost-toggle b{
+  min-width:26px;
+  text-align:center;
+  font-size:10px;
+  color:#775f42;
+}
+.boost-toggle input:checked ~ b{color:#a00000}
+.attack-up-total{margin-left:auto;white-space:nowrap;color:#5f4528}
+.attack-up-total strong{color:#a00000}
+
+.calc-status{
+  margin:6px 0 7px;
+  padding:6px 9px;
+  border:1px solid #b8c5b4;
+  border-radius:3px;
+  background:#eef7ec;
+  color:#365c32;
+  font-size:12px;
+  font-weight:bold;
+  line-height:1.35;
+}
+.calc-status.waiting{
+  border-color:#d5b96e;
+  background:#fff6d8;
+  color:#765a10;
+}
+.calc-status.calculating{
+  border-color:#9eb9d4;
+  background:#eef6ff;
+  color:#315b81;
+}
+.calc-status.done{
+  border-color:#b8c5b4;
+  background:#eef7ec;
+  color:#365c32;
+}
+.result-stale{
+  opacity:.48;
+}
+
+@media(max-width:1000px){
+  #container{max-width:calc(100vw - 16px)}
+  .deck-strip{grid-template-columns:1fr}
+  .stage-panel{grid-template-columns:1fr}
+  .stage-info{min-width:0}
+  .preset-side{width:auto}
+  .preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .virtual-fort-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .enemy-input-table th:nth-child(3),
+  .enemy-input-table td:nth-child(3){width:auto}
+  .enemy-input-table .defTroops{
+    width:100%;
+    min-width:0;
+    max-width:none;
+  }
+}
+
+/* iframe / Hatena blog display adjustments */
+.mobile-notice{
+  display:none;
+  background:#fff7d8;
+  border:1px solid #c9aa5f;
+  padding:14px;
+  margin:10px 0;
+  line-height:1.6;
+}
+.mobile-notice-title{
+  font-weight:bold;
+  color:#5b2c12;
+  font-size:15px;
+  margin-bottom:6px;
+}
+
+/* はてなブログ本文幅など、1000px未満のPCプレビュー用 */
+@media (max-width:1000px) and (min-width:641px){
+  #container{
+    width:100%;
+    max-width:100%;
+    margin:0 auto 20px;
+  }
+  #whiteWrapper{
+    padding:6px;
+  }
+  #gray02Wrapper{
+    padding:8px;
+  }
+  .game-title{
+    font-size:16px;
+  }
+  .deck-strip{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .stage-panel{
+    grid-template-columns:1fr;
+  }
+  .stage-info{
+    min-width:0;
+  }
+  .enemy-info{
+    min-width:0;
+    overflow:hidden;
+  }
+  .preset-side{
+    width:auto;
+  }
+  .preset-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .enemy-input-table{
+    width:100%;
+    table-layout:fixed;
+  }
+  .enemy-input-table th:nth-child(1),
+  .enemy-input-table td:nth-child(1){
+    width:44px;
+  }
+  .enemy-input-table th:nth-child(2),
+  .enemy-input-table td:nth-child(2){
+    width:76px;
+  }
+  .enemy-input-table th:nth-child(3),
+  .enemy-input-table td:nth-child(3){
+    width:auto;
+  }
+  .enemy-input-table select{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    padding-left:2px;
+    padding-right:2px;
+  }
+  .enemy-input-table .defTroops{
+    width:100%;
+    min-width:0;
+    max-width:none;
+    font-size:14px;
+  }
+  .item-grid,
+  .schedule-grid{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+  }
+  .item-day,
+  .schedule-slot{
+    min-width:0;
+  }
+  .item-day b{
+    font-size:12px;
+  }
+  .attack-bulk-bar{
+    align-items:flex-start;
+  }
+}
+
+/* スマホ幅は計算機本体を出さず、案内だけ表示 */
+@media (max-width:640px){
+  #container{
+    width:100%;
+    max-width:100%;
+    margin:0;
+  }
+  #whiteWrapper,
+  #gray02Wrapper{
+    border:0;
+    box-shadow:none;
+    padding:8px;
+  }
+  .mobile-notice{
+    display:block;
+  }
+  .usage-guide,
+  .input-guide,
+  .battle-area,
+  .section-title,
+  .summary-box,
+  .scroll,
+  .row,
+  .footer-note{
+    display:none !important;
+  }
+  .game-title{
+    height:auto;
+    line-height:1.4;
+    padding:10px;
+    font-size:16px;
+  }
+  .game-title .version{
+    float:none;
+    display:inline-block;
+    margin-left:6px;
+  }
+}
+
+
+/* wording update: defense guide note */
+.defense-note{
+  margin-top:4px;
+  padding:4px 6px;
+  border:1px solid #d5c4a5;
+  background:#fffaf0;
+  color:#6b4a24;
+  font-size:11px;
+  line-height:1.35;
+}
+.weather{
+  font-size:12px;
+}
