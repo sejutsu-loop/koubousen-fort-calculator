@@ -4,8 +4,991 @@
 <meta charset="utf-8">
 <title>攻防戦砦計算機（仮）</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="style.css">
+
+<!--
+  攻防戦砦計算機（仮） v0.4.6
+  Copyright © bra3-sejutsu-loop.
+  無断転載・改変再配布禁止。
+  個人利用の範囲で使用可。
+-->
+
+<style>
+:root{
+  --page:#d8d0bd;
+  --paper:#fffdf4;
+  --paper-soft:#fff8dc;
+  --line:#b59d73;
+  --line-soft:#d5c4a5;
+  --title1:#7c5b38;
+  --title2:#3f2b1a;
+  --brown:#5b2c12;
+  --text:#2b241b;
+  --red:#b70000;
+  --blue:#0b3c88;
+  --ok:#137a2d;
+  --ng:#b71717;
+  --manual:#eaf4ff;
+  --preset:#eee7d7;
+  --optional:#fff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--page);
+  color:var(--text);
+  font-family:Meiryo,"Hiragino Kaku Gothic ProN",system-ui,sans-serif;
+  font-size:13px;
+}
+#container{
+  width:1120px;
+  max-width:calc(100vw - 24px);
+  margin:12px auto 28px;
+}
+#whiteWrapper{
+  background:#fff;
+  border:1px solid #a89977;
+  box-shadow:0 2px 8px #0003;
+  padding:10px;
+}
+#gray02Wrapper{
+  background:linear-gradient(#f8f8f8,#e3e1da);
+  border:1px solid #b6aa90;
+  padding:10px;
+  overflow:hidden;
+}
+h1,h2,h3{margin:0}
+.game-title{
+  height:34px;
+  line-height:34px;
+  color:#fff;
+  font-size:18px;
+  padding-left:14px;
+  border:1px solid #3b2a1b;
+  background:linear-gradient(var(--title1),var(--title2));
+  text-shadow:1px 1px 0 #000;
+  border-radius:3px;
+}
+.game-title .version{
+  float:right;
+  font-size:12px;
+  font-weight:normal;
+  margin-right:10px;
+  color:#ffe28a;
+}
+button,input,select{
+  font-family:inherit;
+  font-size:12px;
+}
+input[type=text],
+input[type=number],
+select{
+  border:1px solid #9b8b70;
+  border-radius:3px;
+  background:#fff;
+  height:24px;
+  padding:2px 5px;
+}
+button{
+  border:1px solid #7e6548;
+  border-radius:3px;
+  background:linear-gradient(#fff9df,#d9c28c);
+  color:#3a2716;
+  padding:5px 10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+button:hover{filter:brightness(.97)}
+.row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  margin:6px 0;
+}
+.labelbox{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  background:#fffaf0;
+  border:1px solid #d0bea1;
+  padding:3px 6px;
+  border-radius:4px;
+}
+.usage-guide,
+.input-guide{
+  margin:8px 0 6px;
+  padding:7px 9px;
+  border:1px solid #b9a372;
+  background:#fffef4;
+  font-size:12px;
+  line-height:1.45;
+}
+.usage-title{
+  font-weight:bold;
+  color:var(--brown);
+  margin-bottom:3px;
+}
+.usage-guide ol{
+  margin:0;
+  padding-left:20px;
+}
+.usage-guide li{margin:2px 0}
+.input-guide{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+  background:var(--paper-soft);
+}
+.swatch{
+  display:inline-block;
+  width:12px;
+  height:12px;
+  border:1px solid #999;
+  vertical-align:-2px;
+  margin-right:3px;
+}
+.swatch.req{background:var(--manual)}
+.swatch.auto{background:var(--preset)}
+.swatch.opt{background:var(--optional)}
+
+.battle-area{
+  display:block;
+  margin-top:8px;
+}
+.battle-unit-info,
+.stage-info,
+.enemy-info,
+.control-box{
+  background:var(--paper);
+  border:1px solid var(--line);
+  padding:8px;
+}
+.attack-bulk-bar{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:0 0 6px;
+  padding:6px 8px;
+  border:1px solid var(--line);
+  background:var(--paper-soft);
+  font-size:12px;
+}
+.attack-bulk-bar .bulk-title{
+  font-weight:bold;
+  color:var(--brown);
+  margin-right:4px;
+}
+.attack-bulk-bar label{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.attack-bulk-bar select{
+  min-width:92px;
+}
+.attack-bulk-bar button{
+  height:24px;
+  padding:2px 8px;
+}
+
+.pattern-controls,
+.schedule-controls{
+  margin:0 0 8px;
+  padding:7px 8px;
+  border:1px solid var(--line);
+  background:var(--paper-soft);
+  font-size:12px;
+}
+.pattern-tabs{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:5px;
+  align-items:center;
+  margin-bottom:6px;
+}
+.pattern-tab.active{
+  box-shadow:0 0 0 2px #b70000 inset;
+  background:linear-gradient(#fff3bd,#d9a84c);
+}
+.pattern-name-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  align-items:center;
+}
+.pattern-name-row input{width:150px;}
+.schedule-grid{
+  display:grid;
+  grid-template-columns:repeat(10,minmax(72px,1fr));
+  gap:4px;
+  margin-top:5px;
+}
+.schedule-slot{
+  min-width:72px;
+  border:1px solid #bca87f;
+  background:#fffaf0;
+  padding:4px 3px;
+  text-align:center;
+}
+.schedule-slot b{
+  display:block;
+  font-size:12px;
+  line-height:1.1;
+  white-space:nowrap;
+}
+.schedule-slot select{
+  width:100%;
+  height:24px;
+  font-size:12px;
+  margin-top:2px;
+}
+.pattern-note{
+  color:#6b4a24;
+  font-size:11px;
+  line-height:1.35;
+  margin-top:4px;
+}
+
+.deck-strip{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+}
+.deck-card-area{
+  min-width:0;
+  background:#fffdf4;
+  border:1px solid var(--line);
+}
+.deck-card-area.active{box-shadow:0 0 0 2px #db3 inset}
+.deck-header{
+  height:28px;
+  line-height:28px;
+  color:#fff;
+  background:linear-gradient(#777,#4a4a4a);
+  text-align:center;
+  font-weight:bold;
+  border-bottom:1px solid #333;
+}
+.card-unit{
+  min-height:112px;
+  padding:6px;
+  text-align:center;
+  background:#fbf7e8;
+}
+.busyo-icon,
+.unit-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:42px;
+  height:42px;
+  border:1px solid #8d6b42;
+  border-radius:4px;
+  vertical-align:middle;
+}
+.busyo-icon{
+  background:linear-gradient(135deg,#d4b267,#794b1f);
+  margin-right:3px;
+  position:relative;
+}
+.busyo-icon::after{
+  content:"将";
+  color:white;
+  font-weight:bold;
+  text-shadow:1px 1px #000;
+  font-size:16px;
+}
+.unit-icon{
+  background:linear-gradient(#f5df9f,#c58b2b);
+  font-weight:bold;
+  color:#40260f;
+}
+.attack-inputs{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:5px;
+  margin-top:6px;
+  font-size:12px;
+}
+.attack-inputs label{
+  display:grid;
+  grid-template-columns:66px minmax(0,1fr);
+  align-items:center;
+  gap:5px;
+}
+.attack-inputs input,
+.attack-inputs select{
+  width:100%;
+  min-width:0;
+  height:25px;
+}
+.power-info{
+  margin-top:6px;
+  border-top:1px solid #d4c19b;
+  padding-top:5px;
+}
+.power-info .main{
+  color:var(--red);
+  font-size:13px;
+  font-weight:bold;
+  text-align:right;
+  height:25px;
+  line-height:20px;
+  background:var(--preset);
+  border:1px solid #d4c19b;
+  padding:2px 5px;
+  border-radius:3px;
+}
+.power-info .sub{
+  font-size:10px;
+  color:#666;
+  text-align:right;
+}
+
+.stage-panel{
+  display:grid;
+  grid-template-columns:360px minmax(0,1fr) 170px;
+  gap:8px;
+  align-items:start;
+  margin-top:8px;
+}
+.quick-controls{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:6px;
+  margin-bottom:8px;
+  padding:6px;
+  border:1px solid var(--line-soft);
+  background:var(--paper-soft);
+}
+.quick-controls label{
+  display:grid;
+  grid-template-columns:86px auto;
+  justify-content:start;
+  align-items:center;
+  gap:4px;
+  font-size:12px;
+}
+.quick-controls .check-label{
+  display:flex;
+  gap:5px;
+  align-items:center;
+}
+.unit-input{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.unit-input input.small{
+  width:64px;
+  min-width:64px;
+  text-align:right;
+}
+
+.auto-set-count{
+  display:inline-block;
+  min-width:64px;
+  text-align:right;
+  font-weight:bold;
+  color:var(--blue);
+  background:var(--preset);
+  border:1px solid #d4c19b;
+  border-radius:3px;
+  padding:3px 6px;
+  line-height:16px;
+}
+.stage-name{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  font-size:14px;
+  color:var(--brown);
+  font-weight:bold;
+  border-bottom:1px solid var(--line-soft);
+  padding-bottom:4px;
+  margin-bottom:6px;
+}
+.stage-name .mode-sub,
+.stage-name .lock-note{
+  font-size:11px;
+  margin-left:8px;
+  font-weight:normal;
+}
+.stage-name .mode-sub{color:#7b5631}
+.stage-name .lock-note{color:#8a4a00}
+.weather{
+  width:100%;
+  display:inline-flex;
+  gap:4px;
+  align-items:center;
+  justify-content:space-between;
+  padding:2px 6px;
+  border:1px solid #ccc;
+  background:#f3fbff;
+  border-radius:4px;
+}
+.weather select{width:130px}
+.defense-info{
+  display:grid;
+  grid-template-columns:76px minmax(0,1fr);
+  gap:4px;
+  align-items:center;
+  margin:4px 0;
+  font-size:12px;
+}
+.defense-info input.small{
+  width:64px;
+  text-align:right;
+}
+.defense-power{
+  color:var(--blue);
+  font-weight:bold;
+  text-align:right;
+  background:var(--preset);
+  border:1px solid #9b8b70;
+  border-radius:3px;
+  padding:3px 6px;
+  min-height:24px;
+  white-space:nowrap;
+  overflow:visible;
+  text-overflow:clip;
+  font-size:13px;
+}
+.enemy-info-title{
+  font-weight:bold;
+  color:#4d2d16;
+  margin-bottom:5px;
+}
+.enemy-input-table{
+  border-collapse:collapse;
+  table-layout:fixed;
+  width:100%;
+  font-size:12px;
+}
+.enemy-input-table th,
+.enemy-input-table td{
+  border:1px solid var(--line-soft);
+  padding:3px;
+  background:#fffef8;
+  text-align:center;
+  height:36px;
+}
+.enemy-input-table th{
+  background:#ead9b8;
+  color:#4f2c0c;
+}
+.enemy-input-table th:nth-child(1),
+.enemy-input-table td:nth-child(1){width:40px}
+.enemy-input-table th:nth-child(2),
+.enemy-input-table td:nth-child(2){width:68px}
+.enemy-input-table th:nth-child(3),
+.enemy-input-table td:nth-child(3){width:170px}
+.enemy-input-table select{
+  width:78px;
+  height:25px;
+}
+.enemy-input-table .defTroops{
+  width:154px;
+  min-width:154px;
+  max-width:154px;
+  margin-left:auto;
+  display:block;
+  text-align:right;
+  height:27px;
+  font-size:14px;
+}
+
+.preset-side{
+  width:170px;
+}
+.section-title{
+  margin-top:10px;
+  padding:6px 8px;
+  color:#fff;
+  background:linear-gradient(#87643d,#5a3d24);
+  border:1px solid #3b2819;
+  font-size:13px;
+  font-weight:bold;
+}
+.preset-side .section-title{
+  margin-top:0;
+}
+.preset-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:5px;
+  margin-top:6px;
+}
+.preset-grid button,
+.preset-mini-actions button{
+  width:100%;
+  height:28px;
+  min-height:28px;
+  padding:4px;
+  font-size:12px;
+  font-weight:bold;
+  line-height:1.15;
+  white-space:nowrap;
+}
+.preset-mini-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+}
+
+.item-grid{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(60px,1fr));
+  gap:4px;
+}
+.item-day{
+  min-width:60px;
+  border:1px solid #bca87f;
+  background:#fffaf0;
+  padding:4px 3px;
+  text-align:center;
+}
+.item-day b{
+  display:block;
+  font-size:12px;
+  line-height:1.1;
+  white-space:nowrap;
+}
+.item-day select{
+  width:100%;
+  height:24px;
+  font-size:12px;
+  margin-top:2px;
+}
+.summary-box{
+  background:#fff7d8;
+  border:1px solid #c9aa5f;
+  padding:8px;
+  line-height:1.55;
+  min-height:74px;
+}
+.scroll{
+  max-height:440px;
+  overflow:auto;
+  border:1px solid #c8b896;
+  background:#fff;
+  margin-top:6px;
+}
+.common-table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  margin-top:8px;
+  font-size:12px;
+}
+.common-table th{
+  background:linear-gradient(#7a6040,#4f3824);
+  color:#fff;
+  border:1px solid #3c2a1c;
+  padding:5px 4px;
+  text-align:center;
+}
+.common-table td{
+  border:1px solid #c9b998;
+  padding:4px;
+  text-align:right;
+  white-space:nowrap;
+}
+.common-table td.left{text-align:left}
+.common-table tr:nth-child(even) td{background:#fbf7eb}
+.ok{color:var(--ok);font-weight:bold}
+.ng{color:var(--ng);font-weight:bold}
+.footer-note{
+  margin-top:12px;
+  padding:7px 9px;
+  border:1px solid #b9a372;
+  background:#fffef4;
+  color:#5d5140;
+  font-size:11px;
+  line-height:1.5;
+}
+
+/* 入力状態 */
+.required-input.enabled-input{background:var(--manual)!important}
+.required-input:not(.enabled-input){background:#fff!important}
+.preset-filled,
+.preset-filled:disabled{background:var(--preset)!important}
+.optional-input{background:#fff!important}
+.locked-input,
+.locked-input:disabled{
+  background:#e6ddc9!important;
+  color:#4d3b22!important;
+  border-color:#b59d73!important;
+  opacity:1!important;
+  cursor:not-allowed;
+}
+
+
+/* 攻防戦砦・天兵対応 */
+.event-tools{
+  margin-top:8px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:8px;
+}
+.event-tool-box{
+  background:var(--paper);
+  border:1px solid var(--line);
+  padding:8px;
+}
+.heavenly-scroll{
+  overflow:auto;
+  border:1px solid var(--line-soft);
+  background:#fff;
+}
+.heavenly-table{
+  width:100%;
+  min-width:850px;
+  border-collapse:collapse;
+  table-layout:fixed;
+  font-size:11px;
+}
+.heavenly-table th,
+.heavenly-table td{
+  border:1px solid var(--line-soft);
+  padding:3px;
+  text-align:center;
+  white-space:nowrap;
+}
+.heavenly-table th{
+  background:#ead9b8;
+  color:#4f2c0c;
+}
+.heavenly-table input{
+  width:68px;
+  height:24px;
+  text-align:right;
+}
+.heavenly-table .unit-name{
+  width:92px;
+  font-weight:bold;
+  background:#fffaf0;
+}
+.event-note{
+  margin-top:5px;
+  color:#6b4a24;
+  font-size:11px;
+  line-height:1.4;
+}
+.fort-preset-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:5px;
+  margin:6px 0;
+}
+.fort-preset-grid button{width:100%}
+.virtual-fort-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:5px;
+  margin-top:6px;
+}
+.virtual-fort-slot{
+  border:1px solid #bca87f;
+  background:#fffaf0;
+  padding:5px;
+  min-width:0;
+}
+.virtual-fort-slot b{
+  display:block;
+  margin-bottom:4px;
+  color:var(--brown);
+}
+.virtual-fort-slot input{
+  width:100%;
+  margin-bottom:4px;
+}
+.virtual-fort-actions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:3px;
+}
+.virtual-fort-actions button{
+  padding:4px 2px;
+  font-size:11px;
+}
+.fort-meta-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  margin:5px 0;
+}
+.fort-meta-row label{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+.fort-meta-row input{
+  width:120px;
+  text-align:right;
+}
+.attack-bulk-bar input.bulk-troops{
+  width:88px;
+  height:24px;
+  text-align:right;
+}
+
+
+.attack-input-note{
+  margin:0 0 6px;
+  padding:5px 7px;
+  border:1px solid #d1bd91;
+  background:#fffaf0;
+  color:#6b4a24;
+  font-size:11px;
+  line-height:1.4;
+}
+.atkPower.auto-calculated{
+  background:var(--preset)!important;
+}
+.attack-mode-note{
+  margin-top:3px;
+  color:#76552e;
+  font-size:10px;
+  min-height:13px;
+}
+.attack-up-compact{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:8px;
+  padding:5px 8px;
+  border:1px solid var(--line);
+  background:var(--paper-soft);
+  font-size:12px;
+}
+.attack-up-title{font-weight:bold;color:var(--brown);margin-right:2px}
+.boost-toggle{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:2px 6px;
+  border:1px solid #c8b58d;
+  background:#fffdf4;
+  border-radius:3px;
+  cursor:pointer;
+}
+.boost-toggle input{margin:0}
+.boost-toggle b{
+  min-width:26px;
+  text-align:center;
+  font-size:10px;
+  color:#775f42;
+}
+.boost-toggle input:checked ~ b{color:#a00000}
+.attack-up-total{margin-left:auto;white-space:nowrap;color:#5f4528}
+.attack-up-total strong{color:#a00000}
+
+.calc-status{
+  margin:6px 0 7px;
+  padding:6px 9px;
+  border:1px solid #b8c5b4;
+  border-radius:3px;
+  background:#eef7ec;
+  color:#365c32;
+  font-size:12px;
+  font-weight:bold;
+  line-height:1.35;
+}
+.calc-status.waiting{
+  border-color:#d5b96e;
+  background:#fff6d8;
+  color:#765a10;
+}
+.calc-status.calculating{
+  border-color:#9eb9d4;
+  background:#eef6ff;
+  color:#315b81;
+}
+.calc-status.done{
+  border-color:#b8c5b4;
+  background:#eef7ec;
+  color:#365c32;
+}
+.result-stale{
+  opacity:.48;
+}
+
+@media(max-width:1000px){
+  #container{max-width:calc(100vw - 16px)}
+  .deck-strip{grid-template-columns:1fr}
+  .stage-panel{grid-template-columns:1fr}
+  .stage-info{min-width:0}
+  .preset-side{width:auto}
+  .preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .virtual-fort-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .enemy-input-table th:nth-child(3),
+  .enemy-input-table td:nth-child(3){width:auto}
+  .enemy-input-table .defTroops{
+    width:100%;
+    min-width:0;
+    max-width:none;
+  }
+}
+
+/* iframe / Hatena blog display adjustments */
+.mobile-notice{
+  display:none;
+  background:#fff7d8;
+  border:1px solid #c9aa5f;
+  padding:14px;
+  margin:10px 0;
+  line-height:1.6;
+}
+.mobile-notice-title{
+  font-weight:bold;
+  color:#5b2c12;
+  font-size:15px;
+  margin-bottom:6px;
+}
+
+/* はてなブログ本文幅など、1000px未満のPCプレビュー用 */
+@media (max-width:1000px) and (min-width:641px){
+  #container{
+    width:100%;
+    max-width:100%;
+    margin:0 auto 20px;
+  }
+  #whiteWrapper{
+    padding:6px;
+  }
+  #gray02Wrapper{
+    padding:8px;
+  }
+  .game-title{
+    font-size:16px;
+  }
+  .deck-strip{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .stage-panel{
+    grid-template-columns:1fr;
+  }
+  .stage-info{
+    min-width:0;
+  }
+  .enemy-info{
+    min-width:0;
+    overflow:hidden;
+  }
+  .preset-side{
+    width:auto;
+  }
+  .preset-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .enemy-input-table{
+    width:100%;
+    table-layout:fixed;
+  }
+  .enemy-input-table th:nth-child(1),
+  .enemy-input-table td:nth-child(1){
+    width:44px;
+  }
+  .enemy-input-table th:nth-child(2),
+  .enemy-input-table td:nth-child(2){
+    width:76px;
+  }
+  .enemy-input-table th:nth-child(3),
+  .enemy-input-table td:nth-child(3){
+    width:auto;
+  }
+  .enemy-input-table select{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    padding-left:2px;
+    padding-right:2px;
+  }
+  .enemy-input-table .defTroops{
+    width:100%;
+    min-width:0;
+    max-width:none;
+    font-size:14px;
+  }
+  .item-grid,
+  .schedule-grid{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+  }
+  .item-day,
+  .schedule-slot{
+    min-width:0;
+  }
+  .item-day b{
+    font-size:12px;
+  }
+  .attack-bulk-bar{
+    align-items:flex-start;
+  }
+}
+
+/* スマホ幅は計算機本体を出さず、案内だけ表示 */
+@media (max-width:640px){
+  #container{
+    width:100%;
+    max-width:100%;
+    margin:0;
+  }
+  #whiteWrapper,
+  #gray02Wrapper{
+    border:0;
+    box-shadow:none;
+    padding:8px;
+  }
+  .mobile-notice{
+    display:block;
+  }
+  .usage-guide,
+  .input-guide,
+  .battle-area,
+  .section-title,
+  .summary-box,
+  .scroll,
+  .row,
+  .footer-note{
+    display:none !important;
+  }
+  .game-title{
+    height:auto;
+    line-height:1.4;
+    padding:10px;
+    font-size:16px;
+  }
+  .game-title .version{
+    float:none;
+    display:inline-block;
+    margin-left:6px;
+  }
+}
+
+
+/* wording update: defense guide note */
+.defense-note{
+  margin-top:4px;
+  padding:4px 6px;
+  border:1px solid #d5c4a5;
+  background:#fffaf0;
+  color:#6b4a24;
+  font-size:11px;
+  line-height:1.35;
+}
+.weather{
+  font-size:12px;
+}
+
+</style>
 </head>
+
 <body>
 <div id="container">
   <div id="whiteWrapper">
@@ -187,9 +1170,1377 @@
   </div>
 </div>
 
-<script src="app1.js"></script>
-<script src="app2.js"></script>
-<script src="app3.js"></script>
-<script src="app4.js"></script>
+<script>
+/*
+  攻防戦砦計算機（仮） v0.4.6
+  Copyright © bra3-sejutsu-loop.
+  無断転載・改変再配布禁止。
+  個人利用の範囲で使用可。
+*/
+"use strict";
+
+const DEF_KEYS = ["歩兵","槍兵","弓兵","騎兵","斧兵","双兵","錘兵"];
+const DEF_FAMILY_LABEL = {"歩兵":"剣防御","槍兵":"槍防御","弓兵":"弓防御","騎兵":"騎防御","斧兵":"斧防御","双兵":"双防御","錘兵":"錘防御"};
+const HEAVENLY_TYPES = ["重装槍兵","重装弓兵","重装騎兵","禁軍兵"];
+const ATTACK_TYPES = ["重装槍兵","重装弓兵","重装騎兵","禁軍兵","戦斧兵","双剣兵","大錘兵","大剣兵","矛兵","弩兵","近衛騎兵"];
+const ATTACK_LABEL = {
+  "重装槍兵":"重装槍兵",
+  "重装弓兵":"重装弓兵",
+  "重装騎兵":"重装騎兵",
+  "禁軍兵":"禁軍兵",
+  "戦斧兵":"戦斧兵",
+  "双剣兵":"双剣兵",
+  "大錘兵":"大錘兵",
+  "大剣兵":"大剣兵",
+  "矛兵":"矛槍兵",
+  "弩兵":"弩兵",
+  "近衛騎兵":"近衛騎兵"
+};
+const FAMILY_OF = {
+  "剣兵":"歩兵","大剣兵":"歩兵","盾兵":"歩兵","重盾兵":"歩兵","禁軍兵":"歩兵",
+  "槍兵":"槍兵","矛兵":"槍兵","重装槍兵":"槍兵",
+  "弓兵":"弓兵","弩兵":"弓兵","重装弓兵":"弓兵",
+  "騎兵":"騎兵","近衛騎兵":"騎兵","重装騎兵":"騎兵","斥候騎兵":"騎兵",
+  "戦斧兵":"斧兵","双剣兵":"双兵","大錘兵":"錘兵"
+};
+const SHORT = {
+  "重装槍兵":"重槍","重装弓兵":"重弓","重装騎兵":"重騎","禁軍兵":"禁",
+  "重盾兵":"盾","矛兵":"矛","弩兵":"弩","近衛騎兵":"騎","斥候騎兵":"斥騎","戦斧兵":"斧","双剣兵":"双","大錘兵":"錘",
+  "剣兵":"剣","大剣兵":"大剣","盾兵":"盾","槍兵":"槍","弓兵":"弓"
+};
+const HEAVENLY_OFFICIAL_STATS = {
+  "重装槍兵": {attack:262, "歩兵":280, "槍兵":200, "弓兵":126, "騎兵":274, "斧兵":184, "双兵":201, "錘兵":136},
+  "重装弓兵": {attack:286, "歩兵":290, "槍兵":290, "弓兵":210, "騎兵":130, "斧兵":105, "双兵":136, "錘兵":387},
+  "重装騎兵": {attack:253, "歩兵":302, "槍兵":140, "弓兵":300, "騎兵":220, "斧兵":260, "双兵":91,  "錘兵":240},
+  "禁軍兵":   {attack:141, "歩兵":66,  "槍兵":312, "弓兵":336, "騎兵":303, "斧兵":85,  "双兵":71,  "錘兵":116}
+};
+const ATTACK_BASE_STATS = {
+  "重装槍兵":262,"重装弓兵":286,"重装騎兵":253,"禁軍兵":141,
+  "戦斧兵":142,"双剣兵":105,"大錘兵":185,"大剣兵":85,"矛兵":100,"弩兵":105,"近衛騎兵":110
+};
+let heavenlyStats = JSON.parse(JSON.stringify(HEAVENLY_OFFICIAL_STATS));
+const DEF_MATRIX = {
+  "重盾兵":   { "歩兵":60,  "槍兵":270, "弓兵":260, "騎兵":280, "斧兵":48,  "双兵":56,  "錘兵":40  },
+  "矛兵":     { "歩兵":140, "槍兵":100, "弓兵":63,  "騎兵":137, "斧兵":51,  "双兵":60,  "錘兵":42  },
+  "弩兵":     { "歩兵":145, "槍兵":145, "弓兵":105, "騎兵":65,  "斧兵":54,  "双兵":65,  "錘兵":46  },
+  "近衛騎兵": { "歩兵":151, "槍兵":70,  "弓兵":150, "騎兵":110, "斧兵":59,  "双兵":70,  "錘兵":52  },
+  "斥候騎兵": { "歩兵":30,  "槍兵":10,  "弓兵":40,  "騎兵":20,  "斧兵":2,   "双兵":2,   "錘兵":2   },
+  "戦斧兵":   { "歩兵":139, "槍兵":54,  "弓兵":52,  "騎兵":50,  "斧兵":142, "双兵":155, "錘兵":105 },
+  "双剣兵":   { "歩兵":147, "槍兵":105, "弓兵":102, "騎兵":100, "斧兵":81,  "双兵":105, "錘兵":298 },
+  "大錘兵":   { "歩兵":150, "槍兵":58,  "弓兵":55,  "騎兵":53,  "斧兵":200, "双兵":70,  "錘兵":185 },
+  "重装槍兵": { "歩兵":280, "槍兵":200, "弓兵":126, "騎兵":274, "斧兵":184, "双兵":201, "錘兵":136 },
+  "重装弓兵": { "歩兵":290, "槍兵":290, "弓兵":210, "騎兵":130, "斧兵":105, "双兵":136, "錘兵":387 },
+  "重装騎兵": { "歩兵":302, "槍兵":140, "弓兵":300, "騎兵":220, "斧兵":260, "双兵":91,  "錘兵":240 },
+  "禁軍兵":   { "歩兵":66,  "槍兵":312, "弓兵":336, "騎兵":303, "斧兵":85,  "双兵":71,  "錘兵":116 }
+};
+const DEF_TYPES = Object.keys(DEF_MATRIX);
+const STORAGE_KEYS = {
+  heavenly:"bra3_hokubatsu_v03_heavenly",
+  forts:"bra3_hokubatsu_v03_virtual_forts"
+};
+const FORT_PRESETS = {
+  9: {
+    label:"2026/8公式 ★9",
+    durability:20000000,
+    troops:{"禁軍兵":400000000,"斥候騎兵":1800000}
+  },
+  10: {
+    label:"2026/8公式 ★10",
+    durability:30000000,
+    troops:{
+      "戦斧兵":130000000,"双剣兵":130000000,"大錘兵":130000000,
+      "重装槍兵":250000000,"重装弓兵":250000000,"重装騎兵":250000000,
+      "禁軍兵":100000000,"斥候騎兵":4500000
+    }
+  },
+  11: {
+    label:"2026/8公式 ★11",
+    durability:40000000,
+    troops:{"禁軍兵":3500000000,"斥候騎兵":7000000}
+  },
+  12: {
+    label:"2026/8公式 ★12",
+    durability:50000000,
+    troops:{
+      "戦斧兵":500000000,"双剣兵":500000000,"大錘兵":500000000,
+      "重装槍兵":1000000000,"重装弓兵":1000000000,"重装騎兵":1000000000,
+      "禁軍兵":400000000,"斥候騎兵":10500000
+    }
+  }
+};
+let virtualForts = Array.from({length:5}, (_,i) => ({name:`仮想砦${i+1}`, state:null}));
+const PATTERN_IDS = ["SELF","A","B","C","D","E","F","G","H","I"];
+const DEFAULT_PATTERN_NAMES = {
+  SELF:"自分",
+  A:"同盟員A",
+  B:"同盟員B",
+  C:"同盟員C",
+  D:"同盟員D",
+  E:"同盟員E",
+  F:"同盟員F",
+  G:"同盟員G",
+  H:"同盟員H",
+  I:"同盟員I"
+};
+
+let lastDetailRows = [];
+let lastInitialTotal = 0;
+let presetLocked = false;
+let attackPatterns = {};
+let currentPatternId = "SELF";
+let dailySchedule = ["SELF","","","","","","","","",""];
+let patternFormLoading = false;
+
+const $ = id => document.getElementById(id);
+const fmt = n => Math.round(Number(n)||0).toLocaleString();
+const pct = (x,d=2) => (Number(x)*100).toFixed(d)+"%";
+const parseNum = s => Number(String(s||"").replace(/[,\s]/g,"")) || 0;
+const parseOptionalNum = s => {
+  const t = String(s ?? "").replace(/[,\s]/g,"").trim();
+  if(t === "") return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
+};
+const setVal = (el,n) => { if(el) el.value = Number(n||0).toLocaleString(); };
+const totalTroops = t => Object.values(t).reduce((a,b)=>a+Number(b||0),0);
+const clampInt = (v,min,max) => Math.max(min,Math.min(max,Math.floor(Number(v)||0)));
+
+const AUTO_RECALC_DELAY_MS = 1000;
+let autoRecalcTimer = null;
+
+function setResultsStale(stale){
+  [$("resultSummary"), $("dailyTable"), $("detailTable")].forEach(el => {
+    if(el) el.classList.toggle("result-stale", !!stale);
+  });
+}
+
+function setCalcStatus(state, text){
+  const el = $("calcStatus");
+  if(!el) return;
+  el.classList.remove("waiting","calculating","done");
+  el.classList.add(state);
+  el.textContent = text;
+}
+
+function scheduleAutoRecalc(){
+  if(autoRecalcTimer) clearTimeout(autoRecalcTimer);
+  setResultsStale(true);
+  setCalcStatus("waiting", "⏳ 入力変更あり — 下の結果は変更前です。1秒後に自動再計算します");
+  autoRecalcTimer = setTimeout(() => {
+    autoRecalcTimer = null;
+    runSim();
+  }, AUTO_RECALC_DELAY_MS);
+}
+
+function beginImmediateCalculation(){
+  if(autoRecalcTimer){
+    clearTimeout(autoRecalcTimer);
+    autoRecalcTimer = null;
+  }
+  setResultsStale(true);
+  setCalcStatus("calculating", "計算中…");
+}
+
+function finishCalculation(){
+  setResultsStale(false);
+  setCalcStatus("done", "✓ 最新の入力内容で計算済み");
+}
+
+function makeSelect(options, value){
+  const select = document.createElement("select");
+  for(const item of options){
+    const option = document.createElement("option");
+    option.value = String(item);
+    option.textContent = ATTACK_LABEL?.[item] || String(item);
+    if(String(item) === String(value)) option.selected = true;
+    select.appendChild(option);
+  }
+  return select;
+}
+
+
+function createDefaultPattern(id){
+  return {
+    id,
+    name: DEFAULT_PATTERN_NAMES[id] || id,
+    units: Array.from({length:5}, () => ({use:false, type:"戦斧兵", troops:100000, multiplier:null, power:0}))
+  };
+}
+
+function initPatterns(){
+  attackPatterns = {};
+  for(const id of PATTERN_IDS) attackPatterns[id] = createDefaultPattern(id);
+}
+
+function buildPatternTabs(){
+  const area = $("patternTabs");
+  if(!area) return;
+  area.innerHTML = "";
+  for(const id of PATTERN_IDS){
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "pattern-tab";
+    button.dataset.patternId = id;
+    button.addEventListener("click", () => switchPattern(id));
+    area.appendChild(button);
+  }
+  $("patternNameInput").addEventListener("input", () => {
+    if(!attackPatterns[currentPatternId]) return;
+    attackPatterns[currentPatternId].name = $("patternNameInput").value || currentPatternId;
+    updatePatternLabels();
+    refreshAllDebounced();
+  });
+  $("patternClearBtn").addEventListener("click", () => {
+    if(!confirm("現在のセットをクリアしますか？")) return;
+    attackPatterns[currentPatternId] = createDefaultPattern(currentPatternId);
+    loadPatternToForm(currentPatternId);
+    updatePatternLabels();
+    refreshAll();
+  });
+  updatePatternLabels();
+}
+
+function updatePatternLabels(){
+  document.querySelectorAll(".pattern-tab").forEach(button => {
+    const id = button.dataset.patternId;
+    const name = attackPatterns[id]?.name || id;
+    button.textContent = id === "SELF" ? name : `${id}: ${name}`;
+    button.classList.toggle("active", id === currentPatternId);
+  });
+  document.querySelectorAll(".schedulePattern").forEach(select => {
+    const current = select.value;
+    select.innerHTML = "";
+    const none = document.createElement("option");
+    none.value = "";
+    none.textContent = "なし";
+    select.appendChild(none);
+    for(const id of PATTERN_IDS){
+      const option = document.createElement("option");
+      option.value = id;
+      const name = attackPatterns[id]?.name || id;
+      option.textContent = id === "SELF" ? name : `${id}: ${name}`;
+      select.appendChild(option);
+    }
+    select.value = current;
+  });
+  if($("patternNameInput") && attackPatterns[currentPatternId]){
+    $("patternNameInput").value = attackPatterns[currentPatternId].name || currentPatternId;
+  }
+}
+
+function getUnitBaseAttack(type){
+  if(HEAVENLY_TYPES.includes(type)) return Math.max(0, Number(heavenlyStats?.[type]?.attack ?? ATTACK_BASE_STATS[type] ?? 0));
+  return Math.max(0, Number(ATTACK_BASE_STATS[type] || 0));
+}
+
+function calcAutoAttackPower(type,troops,multiplier){
+  const base = getUnitBaseAttack(type);
+  if(!(troops > 0) || multiplier === null || !Number.isFinite(multiplier) || base <= 0) return 0;
+  return Math.max(0, Math.round(troops * base * (1 + multiplier / 100)));
+}
+
+function syncAttackCardPower(card){
+  const troopsEl = card.querySelector(".atkTroops");
+  const multEl = card.querySelector(".atkMultiplier");
+  const powerEl = card.querySelector(".atkPower");
+  const modeEl = card.querySelector(".attackModeNote");
+  const troops = parseOptionalNum(troopsEl.value);
+  const multiplier = parseOptionalNum(multEl.value);
+  if(troops !== null && troops > 0 && multiplier !== null){
+    const power = calcAutoAttackPower(card.querySelector(".atkType").value, troops, multiplier);
+    powerEl.value = power > 0 ? power.toLocaleString() : "";
+    powerEl.classList.add("auto-calculated");
+    if(modeEl) modeEl.textContent = `自動計算（基礎攻撃 ${getUnitBaseAttack(card.querySelector(".atkType").value)}）`;
+    return {mode:"auto", troops:Math.round(troops), multiplier, power};
+  }
+  powerEl.classList.remove("auto-calculated");
+  if(modeEl) modeEl.textContent = powerEl.value.trim() ? "攻撃力を直接入力" : "兵数＋倍率 または 攻撃力を入力";
+  return {mode:"manual", troops:0, multiplier:null, power:parseNum(powerEl.value)};
+}
+
+function handleAutoAttackInput(card){
+  const powerEl = card.querySelector(".atkPower");
+  powerEl.value = "";
+  powerEl.classList.remove("auto-calculated");
+  syncAttackCardPower(card);
+  refreshAllDebounced();
+}
+
+function handleManualAttackPowerInput(card){
+  const powerEl = card.querySelector(".atkPower");
+  if(String(powerEl.value).trim() !== ""){
+    card.querySelector(".atkTroops").value = "";
+    card.querySelector(".atkMultiplier").value = "";
+  }
+  syncAttackCardPower(card);
+  refreshAllDebounced();
+}
+
+function saveCurrentPatternFromForm(){
+  if(patternFormLoading || !attackPatterns[currentPatternId]) return;
+  const pattern = attackPatterns[currentPatternId];
+  pattern.units = Array.from(document.querySelectorAll(".deck-card-area")).map(card => {
+    syncAttackCardPower(card);
+    const troopsRaw = parseOptionalNum(card.querySelector(".atkTroops").value);
+    const multiplierRaw = parseOptionalNum(card.querySelector(".atkMultiplier").value);
+    return {
+      use: card.querySelector(".atkUse").checked,
+      type: card.querySelector(".atkType").value,
+      troops: troopsRaw !== null && troopsRaw > 0 ? Math.round(troopsRaw) : 0,
+      multiplier: multiplierRaw,
+      power: parseNum(card.querySelector(".atkPower").value)
+    };
+  });
+}
+
+function loadPatternToForm(id){
+  const pattern = attackPatterns[id];
+  if(!pattern) return;
+  patternFormLoading = true;
+  document.querySelectorAll(".deck-card-area").forEach((card,i) => {
+    const unit = pattern.units[i] || {use:false, type:"戦斧兵", troops:100000, multiplier:null, power:0};
+    card.querySelector(".atkUse").checked = !!unit.use;
+    card.querySelector(".atkType").value = unit.type || "戦斧兵";
+    const hasTroops = Number(unit.troops || 0) > 0;
+    const hasMultiplier = unit.multiplier !== null && unit.multiplier !== undefined;
+    card.querySelector(".atkTroops").value = hasTroops ? Number(unit.troops).toLocaleString() : "";
+    card.querySelector(".atkMultiplier").value = hasMultiplier ? String(Number(unit.multiplier)) : "";
+    card.querySelector(".atkPower").value = (!hasTroops && !hasMultiplier && unit.power) ? Number(unit.power).toLocaleString() : "";
+    syncAttackCardPower(card);
+  });
+  if($("patternNameInput")) $("patternNameInput").value = pattern.name || id;
+  patternFormLoading = false;
+  updatePatternLabels();
+  updateAttackCardDisplays();
+  updateInputStates();
+}
+
+function switchPattern(id){
+  if(id === currentPatternId) return;
+  saveCurrentPatternFromForm();
+  currentPatternId = id;
+  loadPatternToForm(id);
+  refreshAll();
+}
+
+function buildScheduleGrid(){
+  const grid = $("scheduleGrid");
+  if(!grid) return;
+  grid.innerHTML = "";
+  for(let setNo=1; setNo<=10; setNo++){
+    const box = document.createElement("div");
+    box.className = "schedule-slot";
+    box.innerHTML = `<b>${setNo}セット目</b>`;
+    const select = document.createElement("select");
+    select.className = "schedulePattern";
+    select.dataset.setNo = setNo;
+    select.addEventListener("change", () => {
+      dailySchedule[setNo-1] = select.value;
+      runSim();
+    });
+    box.appendChild(select);
+    grid.appendChild(box);
+  }
+  updatePatternLabels();
+  loadScheduleToForm();
+  $("scheduleSelf4Btn").addEventListener("click", () => setSchedulePreset(["SELF","SELF","SELF","SELF","SELF","SELF","SELF","SELF","SELF","SELF"]));
+  $("scheduleSelf4A4Btn").addEventListener("click", () => setSchedulePreset(["SELF","SELF","SELF","SELF","SELF","A","A","A","A","A"]));
+  $("scheduleSelf4AtoFBtn").addEventListener("click", () => setSchedulePreset(["SELF","SELF","SELF","SELF","A","B","C","D","E","F"]));
+  $("scheduleSelf1AtoIBtn").addEventListener("click", () => setSchedulePreset(["SELF","A","B","C","D","E","F","G","H","I"]));
+  $("scheduleClearBtn").addEventListener("click", () => setSchedulePreset(["","","","","","","","","",""]));
+}
+
+function loadScheduleToForm(){
+  document.querySelectorAll(".schedulePattern").forEach(select => {
+    const idx = Number(select.dataset.setNo) - 1;
+    select.value = dailySchedule[idx] || "";
+  });
+}
+
+function setSchedulePreset(values){
+  dailySchedule = values.slice(0,10);
+  while(dailySchedule.length < 10) dailySchedule.push("");
+  loadScheduleToForm();
+  runSim();
+}
+
+function getActiveScheduleEntries(){
+  return dailySchedule.slice(0,10)
+    .map((id,i) => ({id, setNo:i+1}))
+    .filter(slot => !!slot.id);
+}
+
+function updateActiveSetCountDisplay(activeCount, validCount){
+  const el = $("activeSetCount");
+  if(!el) return;
+  if(activeCount === validCount){
+    el.textContent = `${activeCount}セット`;
+  }else{
+    el.textContent = `${activeCount}セット（有効${validCount}）`;
+  }
+  el.title = "1グループの攻撃スケジュールでは、「なし」以外を選んだ1〜10セット目だけを自動計算します。";
+}
+
+function getPatternAttackers(patternId){
+  const pattern = attackPatterns[patternId];
+  if(!pattern) return [];
+  return pattern.units.map((unit,i) => {
+    const type = unit.type || "戦斧兵";
+    const troops = Math.max(0, Math.round(Number(unit.troops || 0)));
+    return {
+      use: !!unit.use,
+      patternId,
+      patternName: pattern.name || patternId,
+      name: `第${i+1}部隊`,
+      type,
+      family: FAMILY_OF[type],
+      troops,
+      troopsKnown: troops > 0,
+      multiplier: unit.multiplier ?? null,
+      power: Number(unit.power || 0)
+    };
+  }).filter(a => a.use && a.power > 0 && a.family);
+}
+
+function setupAttackBulkControls(){
+  const select = $("bulkAtkType");
+  if(!select) return;
+  select.innerHTML = "";
+  for(const type of ATTACK_TYPES){
+    const option = document.createElement("option");
+    option.value = type;
+    option.textContent = ATTACK_LABEL?.[type] || type;
+    if(type === "戦斧兵") option.selected = true;
+    select.appendChild(option);
+  }
+
+  $("bulkAtkTypeApply").addEventListener("click", () => {
+    const type = select.value || "戦斧兵";
+    document.querySelectorAll(".deck-card-area").forEach(card => {
+      card.querySelector(".atkType").value = type;
+      syncAttackCardPower(card);
+    });
+    refreshAll();
+  });
+
+  $("bulkAtkTroopsApply").addEventListener("click", () => {
+    const troops = Math.max(0, Math.round(parseNum($("bulkAtkTroops").value)));
+    $("bulkAtkTroops").value = troops.toLocaleString();
+    document.querySelectorAll(".deck-card-area").forEach(card => {
+      card.querySelector(".atkTroops").value = troops > 0 ? troops.toLocaleString() : "";
+      card.querySelector(".atkPower").value = "";
+      syncAttackCardPower(card);
+    });
+    refreshAll();
+  });
+
+  $("bulkAtkOn").addEventListener("click", () => {
+    document.querySelectorAll(".deck-card-area .atkUse").forEach(box => box.checked = true);
+    refreshAll();
+  });
+
+  $("bulkAtkOff").addEventListener("click", () => {
+    document.querySelectorAll(".deck-card-area .atkUse").forEach(box => box.checked = false);
+    refreshAll();
+  });
+}
+
+function init(){
+  loadHeavenlyStats();
+  syncHeavenlyDefenseMatrix();
+  loadVirtualForts();
+  initPatterns();
+  buildAttackCards();
+  setupAttackBulkControls();
+  buildDefenseInputs();
+  buildHeavenlyStatsEditor();
+  buildVirtualFortSlots();
+  buildPatternTabs();
+  buildScheduleGrid();
+  loadPatternToForm(currentPatternId);
+  document.querySelectorAll("[data-fort-preset]").forEach(button => {
+    button.addEventListener("click", () => applyFortPreset(button.dataset.fortPreset));
+  });
+  $("resetHeavenlyStatsBtn").addEventListener("click", resetHeavenlyStats);
+  $("fortDurability").addEventListener("input", () => {
+    const v = parseNum($("fortDurability").value);
+    if(v >= 0) $("fortDurability").classList.add("enabled-input");
+    refreshAllDebounced();
+  });
+
+  $("defPercent").addEventListener("input", () => {
+    if(!presetLocked){
+      $("defPercent").classList.remove("preset-filled","locked-input");
+      $("defPercent").classList.add("required-input","enabled-input");
+      refreshAllDebounced();
+    }
+  });
+
+  if($("days")) $("days").addEventListener("input", runSim);
+  $("stopOnWin").addEventListener("change", runSim);
+  $("showDetails").addEventListener("change", runSim);
+  ["globalAtk10","globalAtk20"].forEach(id => $(id)?.addEventListener("change", () => { updateGlobalAttackUpDisplay(); runSim(); }));
+  updateGlobalAttackUpDisplay();
+
+  refreshAll();
+}
+
+function buildAttackCards(){
+  const area = $("attackCards");
+  area.innerHTML = "";
+  for(let i=0; i<5; i++){
+    const card = document.createElement("div");
+    card.className = "deck-card-area" + (i===0 ? " active" : "");
+    card.dataset.unit = i + 1;
+    card.innerHTML = `
+      <div class="deck-header">第${i+1}部隊</div>
+      <div class="card-unit">
+        <span class="busyo-icon"></span><span class="unit-icon atkUnitIcon">斧</span>
+        <div class="attack-inputs">
+          <label>使用 <span><input class="atkUse" type="checkbox"></span></label>
+          <label>兵種 <span class="atkTypeHolder"></span></label>
+          <label>兵数 <input class="atkTroops required-input" type="text" value="100,000" inputmode="numeric"></label>
+          <label>攻撃倍率(%) <input class="atkMultiplier required-input" type="text" value="" inputmode="decimal" placeholder="例 100000"></label>
+          <label>攻撃力 <input class="atkPower required-input" type="text" value="" inputmode="numeric" placeholder="直接入力も可"></label>
+        </div>
+        <div class="attack-mode-note attackModeNote">兵数＋倍率 または 攻撃力を入力</div>
+        <div class="power-info"><div class="main atkPowerView">0</div><div class="sub">部隊攻撃力（攻撃UP適用前）</div></div>
+      </div>`;
+    const typeSelect = makeSelect(ATTACK_TYPES, "戦斧兵");
+    typeSelect.className = "atkType required-input";
+    card.querySelector(".atkTypeHolder").appendChild(typeSelect);
+
+    card.querySelector(".atkUse").addEventListener("change", refreshAll);
+    card.querySelector(".atkTroops").addEventListener("input", () => handleAutoAttackInput(card));
+    card.querySelector(".atkMultiplier").addEventListener("input", () => handleAutoAttackInput(card));
+    card.querySelector(".atkPower").addEventListener("input", () => handleManualAttackPowerInput(card));
+    typeSelect.addEventListener("change", () => { syncAttackCardPower(card); refreshAll(); });
+    area.appendChild(card);
+  }
+}
+
+function buildDefenseInputs(){
+  const body = $("defRows");
+  body.innerHTML = "";
+  for(const name of DEF_TYPES){
+    const row = document.createElement("tr");
+    row.dataset.defRow = name;
+    const options = DEF_TYPES.map(t => `<option value="${t}" ${t===name ? "selected" : ""}>${SHORT[t] || t}</option>`).join("");
+    row.innerHTML = `
+      <td><input class="defUse" type="checkbox"></td>
+      <td><select class="defType optional-input">${options}</select></td>
+      <td><input class="defTroops required-input" type="text" value="0" inputmode="numeric"></td>`;
+    row.querySelector(".defUse").addEventListener("change", refreshAll);
+    row.querySelector(".defType").addEventListener("change", () => {
+      if(!presetLocked) refreshAll();
+    });
+    row.querySelector(".defTroops").addEventListener("input", () => {
+      if(!presetLocked){
+        const input = row.querySelector(".defTroops");
+        input.classList.remove("preset-filled","locked-input");
+        input.classList.add("required-input");
+        refreshAllDebounced();
+      }
+    });
+    body.appendChild(row);
+  }
+}
+
+
+function updateDefMulFromPercent(){
+  $("defMul").value = (1 + Number($("defPercent").value || 0) / 100).toString();
+}
+
+function updateAttackCardDisplays(){
+  document.querySelectorAll(".deck-card-area").forEach(card => {
+    const type = card.querySelector(".atkType").value;
+    syncAttackCardPower(card);
+    card.querySelector(".atkUnitIcon").textContent = SHORT[type] || type;
+    card.querySelector(".atkPowerView").textContent = fmt(parseNum(card.querySelector(".atkPower").value));
+  });
+}
+
+function updateInputStates(){
+  document.querySelectorAll(".deck-card-area").forEach(card => {
+    const active = card.querySelector(".atkUse").checked;
+    card.querySelector(".atkPower").classList.toggle("enabled-input", active);
+    card.querySelector(".atkTroops").classList.toggle("enabled-input", active);
+    card.querySelector(".atkMultiplier").classList.toggle("enabled-input", active);
+    card.querySelector(".atkType").classList.toggle("enabled-input", active);
+  });
+
+  document.querySelectorAll("#defRows tr").forEach(row => {
+    const active = row.querySelector(".defUse").checked;
+    const type = row.querySelector(".defType");
+    const troops = row.querySelector(".defTroops");
+
+    if(presetLocked){
+      type.classList.remove("enabled-input","required-input","optional-input");
+      troops.classList.remove("enabled-input","required-input");
+      type.classList.add("preset-filled","locked-input");
+      troops.classList.add("preset-filled","locked-input");
+      return;
+    }
+
+    type.classList.remove("locked-input");
+    troops.classList.remove("locked-input");
+    type.classList.toggle("enabled-input", active);
+    troops.classList.toggle("enabled-input", active);
+    if(!active && !troops.classList.contains("preset-filled")){
+      troops.classList.remove("enabled-input");
+    }
+  });
+}
+
+function applyPresetLock(lock = presetLocked){
+  presetLocked = !!lock;
+  ["weatherSelect","defPercent"].forEach(id => {
+    const el = $(id);
+    el.disabled = presetLocked;
+    el.classList.toggle("locked-input", presetLocked);
+    if(presetLocked){
+      el.classList.remove("required-input","enabled-input");
+      el.classList.add("preset-filled");
+    }
+  });
+
+  document.querySelectorAll("#defRows tr").forEach(row => {
+    ["defUse","defType","defTroops"].forEach(cls => {
+      const el = row.querySelector("." + cls);
+      el.disabled = presetLocked;
+      el.classList.toggle("locked-input", presetLocked);
+    });
+  });
+}
+
+
+
+function cloneData(v){
+  return JSON.parse(JSON.stringify(v));
+}
+
+function loadHeavenlyStats(){
+  heavenlyStats = cloneData(HEAVENLY_OFFICIAL_STATS);
+  try{
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.heavenly) || "null");
+    if(saved && typeof saved === "object"){
+      for(const type of HEAVENLY_TYPES){
+        if(!saved[type]) continue;
+        const merged = {...heavenlyStats[type]};
+        merged.attack = Number(saved[type].attack ?? merged.attack);
+        for(const key of DEF_KEYS) merged[key] = Number(saved[type][key] ?? merged[key]);
+        heavenlyStats[type] = merged;
+      }
+    }
+  }catch(e){
+    console.warn("天兵ステータス読込失敗", e);
+  }
+}
+
+function saveHeavenlyStats(){
+  try{
+    localStorage.setItem(STORAGE_KEYS.heavenly, JSON.stringify(heavenlyStats));
+  }catch(e){
+    console.warn("天兵ステータス保存失敗", e);
+  }
+}
+
+function syncHeavenlyDefenseMatrix(){
+  for(const type of HEAVENLY_TYPES){
+    if(!DEF_MATRIX[type]) DEF_MATRIX[type] = {};
+    for(const key of DEF_KEYS){
+      DEF_MATRIX[type][key] = Math.max(0, Number(heavenlyStats[type]?.[key] || 0));
+    }
+  }
+}
+
+function buildHeavenlyStatsEditor(){
+  const body = $("heavenlyStatsBody");
+  if(!body) return;
+  body.innerHTML = "";
+  const fields = ["attack", ...DEF_KEYS];
+  for(const type of HEAVENLY_TYPES){
+    const row = document.createElement("tr");
+    const nameTd = document.createElement("td");
+    nameTd.className = "unit-name";
+    nameTd.textContent = type;
+    row.appendChild(nameTd);
+    for(const field of fields){
+      const td = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = "number";
+      input.min = "0";
+      input.step = "1";
+      input.value = String(Number(heavenlyStats[type]?.[field] || 0));
+      input.dataset.heavenlyType = type;
+      input.dataset.heavenlyField = field;
+      input.addEventListener("input", () => {
+        const v = Math.max(0, Number(input.value || 0));
+        heavenlyStats[type][field] = v;
+        syncHeavenlyDefenseMatrix();
+        saveHeavenlyStats();
+        refreshAllDebounced();
+      });
+      td.appendChild(input);
+      row.appendChild(td);
+    }
+    body.appendChild(row);
+  }
+}
+
+function resetHeavenlyStats(){
+  if(!confirm("天兵ステータスを2026/8公式値に戻しますか？")) return;
+  heavenlyStats = cloneData(HEAVENLY_OFFICIAL_STATS);
+  syncHeavenlyDefenseMatrix();
+  saveHeavenlyStats();
+  buildHeavenlyStatsEditor();
+  refreshAll();
+}
+
+function loadVirtualForts(){
+  virtualForts = Array.from({length:5}, (_,i) => ({name:`仮想砦${i+1}`, state:null}));
+  try{
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.forts) || "null");
+    if(Array.isArray(saved)){
+      for(let i=0;i<Math.min(5,saved.length);i++){
+        if(!saved[i]) continue;
+        virtualForts[i] = {
+          name:String(saved[i].name || `仮想砦${i+1}`),
+          state:saved[i].state || null
+        };
+      }
+    }
+  }catch(e){
+    console.warn("仮想砦読込失敗", e);
+  }
+}
+
+function saveVirtualForts(){
+  try{
+    localStorage.setItem(STORAGE_KEYS.forts, JSON.stringify(virtualForts));
+  }catch(e){
+    console.warn("仮想砦保存失敗", e);
+  }
+}
+
+function buildVirtualFortSlots(){
+  const area = $("virtualFortSlots");
+  if(!area) return;
+  area.innerHTML = "";
+  for(let i=0;i<5;i++){
+    const slot = document.createElement("div");
+    slot.className = "virtual-fort-slot";
+    slot.dataset.slot = i;
+    slot.innerHTML = `
+      <b>スロット${i+1}</b>
+      <input class="virtualFortName" type="text" value="${escapeHtml(virtualForts[i]?.name || `仮想砦${i+1}`)}">
+      <div class="virtual-fort-actions">
+        <button type="button" class="virtualFortSave">保存</button>
+        <button type="button" class="virtualFortLoad">読込</button>
+        <button type="button" class="virtualFortDelete">削除</button>
+      </div>`;
+    slot.querySelector(".virtualFortSave").addEventListener("click", () => saveVirtualFortSlot(i, slot));
+    slot.querySelector(".virtualFortLoad").addEventListener("click", () => loadVirtualFortSlot(i, slot));
+    slot.querySelector(".virtualFortDelete").addEventListener("click", () => deleteVirtualFortSlot(i, slot));
+    area.appendChild(slot);
+  }
+}
+
+function getCurrentFortState(){
+  return {
+    durability: parseNum($("fortDurability")?.value),
+    weather: $("weatherSelect")?.value || "晴れ",
+    defPercent: Number($("defPercent")?.value || 0),
+    troops: getDefense(),
+    heavenlyStats: cloneData(heavenlyStats)
+  };
+}
+
+function saveVirtualFortSlot(i, slotEl){
+  const name = String(slotEl.querySelector(".virtualFortName").value || `仮想砦${i+1}`).trim() || `仮想砦${i+1}`;
+  virtualForts[i] = {name, state:getCurrentFortState()};
+  saveVirtualForts();
+  slotEl.querySelector(".virtualFortName").value = name;
+  alert(`${name} を保存しました。`);
+}
+
+function loadVirtualFortSlot(i, slotEl){
+  const item = virtualForts[i];
+  if(!item?.state){
+    alert("このスロットには保存データがありません。");
+    return;
+  }
+  applyFortState(item.state, item.name || `仮想砦${i+1}`);
+  if(slotEl) slotEl.querySelector(".virtualFortName").value = item.name || `仮想砦${i+1}`;
+}
+
+function deleteVirtualFortSlot(i, slotEl){
+  if(!virtualForts[i]?.state){
+    virtualForts[i] = {name:`仮想砦${i+1}`, state:null};
+    if(slotEl) slotEl.querySelector(".virtualFortName").value = virtualForts[i].name;
+    saveVirtualForts();
+    return;
+  }
+  if(!confirm(`スロット${i+1}の保存データを削除しますか？`)) return;
+  virtualForts[i] = {name:`仮想砦${i+1}`, state:null};
+  saveVirtualForts();
+  if(slotEl) slotEl.querySelector(".virtualFortName").value = virtualForts[i].name;
+}
+
+function applyFortPreset(key){
+  const preset = FORT_PRESETS[key];
+  if(!preset) return;
+  applyFortState({
+    durability:preset.durability,
+    weather:"晴れ",
+    defPercent:0,
+    troops:preset.troops
+  }, preset.label);
+}
+
+function applyFortState(state, label){
+  presetLocked = false;
+  applyPresetLock(false);
+
+  if(state.heavenlyStats && typeof state.heavenlyStats === "object"){
+    const restored = cloneData(HEAVENLY_OFFICIAL_STATS);
+    for(const type of HEAVENLY_TYPES){
+      if(!state.heavenlyStats[type]) continue;
+      restored[type] = {...restored[type], ...state.heavenlyStats[type]};
+    }
+    heavenlyStats = restored;
+    syncHeavenlyDefenseMatrix();
+    saveHeavenlyStats();
+    buildHeavenlyStatsEditor();
+  }
+
+  if($("fortDurability")) setVal($("fortDurability"), Number(state.durability || 0));
+  if($("weatherSelect")) $("weatherSelect").value = state.weather || "晴れ";
+  if($("defPercent")){
+    $("defPercent").value = String(Number(state.defPercent || 0));
+    $("defPercent").disabled = false;
+    $("defPercent").classList.remove("preset-filled","locked-input");
+    $("defPercent").classList.add("required-input","enabled-input");
+  }
+
+  applyDefenseManualValues(state.troops || {});
+  $("currentStageName").innerHTML = `${escapeHtml(label || "仮想砦")}<span class="mode-sub">攻防戦・手入力修正可</span>`;
+  $("currentStageName").classList.remove("locked","unlocked");
+  $("currentStageName").classList.add("manual");
+  refreshAll();
+}
+
+function applyDefenseManualValues(values){
+  document.querySelectorAll("#defRows tr").forEach(row => {
+    const base = row.dataset.defRow;
+    const check = row.querySelector(".defUse");
+    const type = row.querySelector(".defType");
+    const troops = row.querySelector(".defTroops");
+    check.disabled = false;
+    type.disabled = false;
+    troops.disabled = false;
+    type.value = base;
+    const n = Number(values[base] || 0);
+    check.checked = n > 0;
+    setVal(troops, n);
+    type.classList.remove("preset-filled","locked-input");
+    troops.classList.remove("preset-filled","locked-input");
+    type.classList.add("optional-input");
+    troops.classList.add("required-input");
+  });
+}
+
+function getDefense(){
+  const out = {};
+  document.querySelectorAll("#defRows tr").forEach(row => {
+    if(!row.querySelector(".defUse").checked) return;
+    const name = row.querySelector(".defType").value;
+    const n = parseNum(row.querySelector(".defTroops").value);
+    if(n > 0) out[name] = (out[name] || 0) + n;
+  });
+  return out;
+}
+
+function getAttackers(){
+  saveCurrentPatternFromForm();
+  return getPatternAttackers(currentPatternId);
+}
+
+function getGlobalAttackBonusRate(){
+  let rate = 0;
+  if($("globalAtk10")?.checked) rate += 10;
+  if($("globalAtk20")?.checked) rate += 20;
+  return rate;
+}
+
+function updateGlobalAttackUpDisplay(){
+  const r10 = !!$("globalAtk10")?.checked;
+  const r20 = !!$("globalAtk20")?.checked;
+  if($("globalAtk10State")) $("globalAtk10State").textContent = r10 ? "ON" : "OFF";
+  if($("globalAtk20State")) $("globalAtk20State").textContent = r20 ? "ON" : "OFF";
+  if($("globalAttackBonus")) $("globalAttackBonus").textContent = `+${(r10?10:0)+(r20?20:0)}%`;
+}
+
+function calcEffectiveDefense(defTroops, attackFamily, defMul){
+  let total = 0;
+  for(const [name,n] of Object.entries(defTroops)){
+    total += n * (DEF_MATRIX[name]?.[attackFamily] || 0);
+  }
+  return total * defMul;
+}
+
+function calcDisplayDefense(defTroops, defMul){
+  const attacker = getAttackers()[0];
+  let family = attacker?.family;
+  if(!family){
+    const firstType = document.querySelector(".deck-card-area .atkType")?.value || "戦斧兵";
+    family = FAMILY_OF[firstType] || "斧兵";
+  }
+  return calcEffectiveDefense(defTroops, family, defMul);
+}
+
+function updateDisplayDefensePower(){
+  updateDefMulFromPercent();
+  const defTroops = getDefense();
+  const defMul = Number($("defMul").value || 1);
+  $("displayDefensePower").textContent = fmt(calcDisplayDefense(defTroops, defMul));
+}
+
+function calcBattleRates(A,D){
+  if(D <= 0) return {rawDefRate:1, defRate:1, atkLossRate:0};
+  if(A <= 0) return {rawDefRate:0, defRate:0, atkLossRate:1};
+  const ratio = A / D;
+  const power = Math.pow(Math.max(0, ratio), 1.5);
+  if(ratio >= 1){
+    return {rawDefRate:1, defRate:1, atkLossRate:Math.min(1, 1 / Math.max(1e-12, power))};
+  }
+  return {rawDefRate:power, defRate:power, atkLossRate:1};
+}
+
+function calcLossWeightForTarget(defTroops,targetName){
+  const family = FAMILY_OF[targetName];
+  let weight = 0;
+  for(const [defName,n] of Object.entries(defTroops)){
+    weight += n * (DEF_MATRIX[defName]?.[family] || 0);
+  }
+  return weight;
+}
+
+function allocateLosses(defTroops,totalLoss){
+  const losses = {};
+  for(const k of Object.keys(defTroops)) losses[k] = 0;
+
+  let remain = Math.min(totalTroops(defTroops), Math.max(0, Math.round(totalLoss)));
+  let candidates = Object.keys(defTroops).filter(k => defTroops[k] > 0);
+
+  for(let i=0; i<20 && remain>0 && candidates.length; i++){
+    const weights = {};
+    let sumWeight = 0;
+
+    for(const name of candidates){
+      const cap = defTroops[name] - losses[name];
+      if(cap <= 0) continue;
+      const weight = Math.max(0, calcLossWeightForTarget(defTroops, name));
+      if(weight > 0){
+        weights[name] = weight;
+        sumWeight += weight;
+      }
+    }
+
+    candidates = candidates.filter(name => (defTroops[name] - losses[name]) > 0 && weights[name] > 0);
+    if(!candidates.length || sumWeight <= 0) break;
+
+    const allocs = candidates.map(name => {
+      const cap = defTroops[name] - losses[name];
+      const raw = remain * weights[name] / sumWeight;
+      const floor = Math.min(cap, Math.floor(raw));
+      return {name, raw, floor, frac:raw - Math.floor(raw)};
+    });
+
+    let used = 0;
+    for(const a of allocs){
+      if(a.floor > 0){
+        losses[a.name] += a.floor;
+        used += a.floor;
+      }
+    }
+
+    let rest = remain - used;
+    allocs.sort((a,b) => b.frac - a.frac);
+    for(const a of allocs){
+      if(rest <= 0) break;
+      const capLeft = defTroops[a.name] - losses[a.name];
+      if(capLeft > 0){
+        losses[a.name] += 1;
+        rest -= 1;
+      }
+    }
+
+    const newRemain = remain - (used + (remain - used - rest));
+    if(newRemain === remain) break;
+    remain = newRemain;
+    candidates = candidates.filter(name => (defTroops[name] - losses[name]) > 0);
+  }
+  return losses;
+}
+
+function simulateOneBattle(defTroops,attacker,day,setNo,unitNo,attackNo,opts){
+  const attackUpRate = getGlobalAttackBonusRate();
+  const A = attacker.power * (1 + attackUpRate / 100);
+  const D = calcEffectiveDefense(defTroops, attacker.family, opts.defMul);
+  const ratio = D > 0 ? A / D : Infinity;
+  const rates = calcBattleRates(A,D);
+  const totalDefLoss = rates.defRate >= 1
+    ? totalTroops(defTroops)
+    : Math.min(totalTroops(defTroops), Math.round(totalTroops(defTroops) * rates.defRate));
+  const losses = allocateLosses(defTroops,totalDefLoss);
+  const attackTroopsKnown = !!attacker.troopsKnown && Number(attacker.troops) > 0;
+  const attackTroops = attackTroopsKnown ? Math.max(0, Math.round(Number(attacker.troops))) : null;
+  const attackLoss = attackTroopsKnown ? Math.min(attackTroops, Math.max(0, Math.round(attackTroops * rates.atkLossRate))) : null;
+  const attackRemain = attackTroopsKnown ? Math.max(0, attackTroops - attackLoss) : null;
+  const next = {};
+
+  for(const [name,n] of Object.entries(defTroops)){
+    next[name] = Math.max(0, n - (losses[name] || 0));
+  }
+
+  return {
+    attackNo, day, setNo, unitNo,
+    patternId:attacker.patternId || "",
+    patternName:attacker.patternName || "",
+    unitName:attacker.name,
+    atkType:attacker.type,
+    defFamily:attacker.family,
+    attackUpRate, A, D, x:ratio,
+    rawDefRate:rates.rawDefRate,
+    defRate:rates.defRate,
+    atkLossRate:rates.atkLossRate,
+    attackTroopsKnown,
+    attackTroops,
+    attackLoss,
+    attackRemain,
+    totalDefLoss,
+    losses,
+    before:{...defTroops},
+    after:next,
+    remainingTotal:totalTroops(next)
+  };
+}
+
+function runSim(){
+  beginImmediateCalculation();
+  saveCurrentPatternFromForm();
+  updateDisplayDefensePower();
+
+  const MAX_GROUP_REPEATS = 1000;
+  const opts = {defMul:Number($("defMul").value || 1), stopOnWin:true};
+  let defTroops = getDefense();
+  const initialTotal = totalTroops(defTroops);
+  lastInitialTotal = initialTotal;
+
+  const activeSchedule = getActiveScheduleEntries();
+  const activeSlots = activeSchedule.filter(slot => getPatternAttackers(slot.id).length > 0);
+  updateActiveSetCountDisplay(activeSchedule.length, activeSlots.length);
+
+  if(!activeSlots.length || initialTotal <= 0){
+    $("resultSummary").innerHTML = '<span class="ng">攻撃側または防御側の入力が不足しています。</span>';
+    $("dailyTable").innerHTML = "";
+    $("detailTable").innerHTML = "";
+    lastDetailRows = [];
+    finishCalculation();
+    return;
+  }
+
+  const details = [];
+  const daily = [];
+  let attackNo = 0;
+  let cleared = false;
+  let clearAt = null;
+  let stoppedReason = "";
+
+  for(let groupNo=1; groupNo<=MAX_GROUP_REPEATS; groupNo++){
+    const start = totalTroops(defTroops);
+    let loss = 0;
+    let count = 0;
+    let attackTroopsUsed = 0;
+    let attackTroopsLost = 0;
+    let attackTroopsUnknown = 0;
+
+    for(const slot of activeSchedule){
+      const setNo = slot.setNo;
+      const patternId = slot.id;
+      const attackers = getPatternAttackers(patternId);
+      if(!attackers.length) continue;
+
+      for(let i=0; i<attackers.length; i++){
+        if(totalTroops(defTroops) <= 0){
+          cleared = true;
+          break;
+        }
+        attackNo += 1;
+        count += 1;
+
+        const result = simulateOneBattle(defTroops, attackers[i], groupNo, setNo, i+1, attackNo, opts);
+        details.push(result);
+        loss += result.totalDefLoss;
+        if(result.attackTroopsKnown){
+          attackTroopsUsed += Number(result.attackTroops || 0);
+          attackTroopsLost += Number(result.attackLoss || 0);
+        }else{
+          attackTroopsUnknown += 1;
+        }
+        defTroops = result.after;
+
+        if(totalTroops(defTroops) <= 0){
+          cleared = true;
+          clearAt = result;
+          break;
+        }
+      }
+      if(cleared) break;
+    }
+
+    const scheduledPatternIds = activeSchedule.map(slot => slot.id);
+    const end = totalTroops(defTroops);
+
+    daily.push({
+      day:groupNo,
+      schedule: scheduledPatternIds,
+      patternSummary: summarizeSchedule(scheduledPatternIds),
+      attacks:count,
+      attackTroopsUsed,
+      attackTroopsLost,
+      attackTroopsUnknown,
+      start,
+      loss,
+      end,
+      damage:initialTotal > 0 ? 1 - end / initialTotal : 1,
+      troops:{...defTroops},
+      cleared
+    });
+
+    if(cleared) break;
+
+    // 丸めの結果などで1グループ実行しても1兵も減らない場合は無限反復を避ける。
+    if(end >= start || loss <= 0){
+      stoppedReason = "この1グループでは防御兵が減らないため、討伐まで反復できません。攻撃力または攻撃設定を確認してください。";
+      break;
+    }
+
+    if(groupNo === MAX_GROUP_REPEATS){
+      stoppedReason = `計算上限の${MAX_GROUP_REPEATS}グループに達しました。`;
+    }
+  }
+
+  lastDetailRows = details;
+  renderSummary({cleared, clearAt, details, daily, initialTotal, finalTroops:defTroops, stoppedReason});
+  renderDaily(daily);
+  renderDetails(details, initialTotal, $("showDetails").checked);
+  finishCalculation();
+}
+
+function formatPatternLabel(id, name){
+  if(!id) return "";
+  if(id === "SELF") return name || "自分";
+  return `${id}:${name || id}`;
+}
+
+function summarizeSchedule(slots){
+  const counts = {};
+  for(const id of slots){
+    if(!id) continue;
+    const label = attackPatterns[id]?.name || id;
+    const key = formatPatternLabel(id, label);
+    counts[key] = (counts[key] || 0) + 1;
+  }
+  return Object.entries(counts).map(([key,count]) => `${key}×${count}`).join(" / ") || "なし";
+}
+
+function renderSummary(res){
+  const finalTotal = totalTroops(res.finalTroops);
+  const damage = res.initialTotal > 0 ? 1 - finalTotal / res.initialTotal : 1;
+  let html = "";
+
+  if(res.cleared && res.clearAt){
+    const r = res.clearAt;
+    html += `<span class="ok">討伐可能</span>：指定1グループを <b>${r.day}回</b> 実行し、${r.day}グループ目の${r.setNo}セット目 ${escapeHtml(formatPatternLabel(r.patternId, r.patternName))} 第${r.unitNo}部隊、累計${r.attackNo}攻撃目で防御側0。`;
+  }else{
+    html += `<span class="ng">未討伐</span>：最終残兵 ${fmt(finalTotal)}、累計ダメージ率 ${pct(damage,2)}。`;
+    if(res.stoppedReason) html += `<br>${escapeHtml(res.stoppedReason)}`;
+  }
+
+  const knownRows = res.details.filter(r => r.attackTroopsKnown);
+  const totalAttackTroops = knownRows.reduce((s,r) => s + Number(r.attackTroops || 0), 0);
+  const totalAttackLoss = knownRows.reduce((s,r) => s + Number(r.attackLoss || 0), 0);
+  const unknownTroopAttacks = res.details.length - knownRows.length;
+  const durability = parseNum($("fortDurability")?.value);
+
+  html += `<br>実行グループ数：${fmt(res.daily.length)} 回 / 実行攻撃数：${fmt(res.details.length)} 回 / 共通攻撃UP：+${getGlobalAttackBonusRate()}%`;
+  if(knownRows.length) html += `<br>攻撃側累計投入兵数：${fmt(totalAttackTroops)} / 推定損失：${fmt(totalAttackLoss)} / 生還：${fmt(Math.max(0,totalAttackTroops-totalAttackLoss))}`;
+  if(unknownTroopAttacks > 0) html += `<br>※攻撃力を直接入力した ${fmt(unknownTroopAttacks)} 攻撃は兵数不明のため、攻撃側損失兵数を算出していません。`;
+  if(durability > 0) html += `<br>砦耐久（保存・表示用）：${fmt(durability)}`;
+  html += `<br>最終残兵：${Object.entries(res.finalTroops).map(([k,v]) => `${k} ${fmt(v)}`).join(" / ") || "0"}`;
+  $("resultSummary").innerHTML = html;
+}
+
+function getUsedDefenseTypesFromRows(rows){
+  const used = new Set();
+  for(const r of rows){
+    for(const k of DEF_TYPES){
+      if((r.before?.[k] || 0) > 0 || (r.losses?.[k] || 0) > 0 || (r.after?.[k] || 0) > 0){
+        used.add(k);
+      }
+    }
+  }
+  if(!used.size){
+    const defense = getDefense();
+    for(const k of Object.keys(defense)){
+      if(defense[k] > 0) used.add(k);
+    }
+  }
+  return DEF_TYPES.filter(k => used.has(k));
+}
+
+function renderDaily(rows){
+  const used = getUsedDefenseTypesFromRows(lastDetailRows);
+  let html = `<thead><tr><th>グループ</th><th>セット割当</th><th>攻撃数</th><th>投入兵数</th><th>攻撃側損失</th><th>開始兵数</th><th>防御損耗</th><th>終了兵数</th><th>累計ダメージ</th>${used.map(k => `<th>${k}</th>`).join("")}</tr></thead><tbody>`;
+
+  for(const r of rows){
+    html += `<tr><td>${r.day}グループ目</td><td class="left">${escapeHtml(r.patternSummary || "")}</td><td>${r.attacks}</td><td>${fmt(r.attackTroopsUsed || 0)}${r.attackTroopsUnknown ? "＋不明" : ""}</td><td>${fmt(r.attackTroopsLost || 0)}${r.attackTroopsUnknown ? "＋不明" : ""}</td><td>${fmt(r.start)}</td><td>${fmt(r.loss)}</td><td>${fmt(r.end)}</td><td>${pct(r.damage,2)}</td>${used.map(k => `<td>${fmt(r.troops[k] || 0)}</td>`).join("")}</tr>`;
+  }
+
+  $("dailyTable").innerHTML = html + "</tbody>";
+}
+
+function renderDetails(rows,initialTotal,show){
+  if(!show){
+    $("detailTable").innerHTML = '<tbody><tr><td class="left">詳細表示はオフです。</td></tr></tbody>';
+    return;
+  }
+
+  const used = getUsedDefenseTypesFromRows(rows);
+  let html = `<thead><tr><th>No</th><th>グループ</th><th>セット順</th><th>セット名</th><th>部隊</th><th>兵種</th><th>攻撃兵数</th><th>参照防御</th><th>攻撃UP</th><th>攻撃力A</th><th>総防御D<br><span style="font-size:10px">残兵×兵種</span></th><th>A/D</th><th>攻撃損耗率</th><th>攻撃損失</th><th>攻撃残兵</th><th>防御損耗率</th><th>防御総損耗</th>${used.map(k => `<th>${k}損耗</th>`).join("")}<th>残兵合計</th><th>累計ダメージ</th><th>累計投入</th><th>累計攻撃損失</th></tr></thead><tbody>`;
+
+  let cumAttackTroops = 0;
+  let cumAttackLoss = 0;
+  for(const r of rows){
+    const damage = initialTotal > 0 ? 1 - r.remainingTotal / initialTotal : 1;
+    if(r.attackTroopsKnown){
+      cumAttackTroops += Number(r.attackTroops || 0);
+      cumAttackLoss += Number(r.attackLoss || 0);
+    }
+    const atkTroopsText = r.attackTroopsKnown ? fmt(r.attackTroops) : "—";
+    const atkLossText = r.attackTroopsKnown ? fmt(r.attackLoss) : "—";
+    const atkRemainText = r.attackTroopsKnown ? fmt(r.attackRemain) : "—";
+    html += `<tr><td>${r.attackNo}</td><td>${r.day}</td><td>${r.setNo}</td><td class="left">${escapeHtml(formatPatternLabel(r.patternId, r.patternName))}</td><td class="left">${escapeHtml(r.unitName)}</td><td>${r.atkType}</td><td>${atkTroopsText}</td><td>${DEF_FAMILY_LABEL[r.defFamily] || r.defFamily || ""}</td><td>+${r.attackUpRate}%</td><td>${fmt(r.A)}</td><td>${fmt(r.D)}</td><td>${Number.isFinite(r.x) ? r.x.toFixed(5) : "∞"}</td><td>${pct(r.atkLossRate,4)}</td><td>${atkLossText}</td><td>${atkRemainText}</td><td>${pct(r.rawDefRate,4)}</td><td>${fmt(r.totalDefLoss)}</td>${used.map(k => `<td>${fmt(r.losses[k] || 0)}</td>`).join("")}<td>${fmt(r.remainingTotal)}</td><td>${pct(damage,2)}</td><td>${fmt(cumAttackTroops)}</td><td>${fmt(cumAttackLoss)}</td></tr>`;
+  }
+
+  $("detailTable").innerHTML = html + "</tbody>";
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, ch => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[ch]));
+}
+
+function refreshLightweight(){
+  updateGlobalAttackUpDisplay();
+  saveCurrentPatternFromForm();
+  updateDefMulFromPercent();
+  updateAttackCardDisplays();
+  updateInputStates();
+  updateDisplayDefensePower();
+}
+
+function refreshAllDebounced(){
+  refreshLightweight();
+  scheduleAutoRecalc();
+}
+
+function refreshAll(){
+  refreshLightweight();
+  runSim();
+}
+
+
+/* Hatena blog iframe auto-height notification */
+let parentFrameHeightRaf = 0;
+let lastParentFrameHeight = 0;
+
+function measureParentFrameContentHeight(){
+  const container = document.getElementById("container");
+  if(container){
+    const rect = container.getBoundingClientRect();
+    const style = window.getComputedStyle(container);
+    const marginBottom = parseFloat(style.marginBottom) || 0;
+    return Math.ceil(rect.bottom + window.scrollY + marginBottom + 2);
+  }
+
+  if(document.body){
+    const rect = document.body.getBoundingClientRect();
+    return Math.ceil(rect.bottom + window.scrollY + 2);
+  }
+
+  return 0;
+}
+
+function notifyParentFrameHeight(){
+  if(window.parent === window) return;
+
+  if(parentFrameHeightRaf){
+    cancelAnimationFrame(parentFrameHeightRaf);
+  }
+
+  parentFrameHeightRaf = requestAnimationFrame(() => {
+    parentFrameHeightRaf = 0;
+
+    const height = measureParentFrameContentHeight();
+    if(!Number.isFinite(height) || height <= 0) return;
+    if(Math.abs(height - lastParentFrameHeight) < 2) return;
+
+    lastParentFrameHeight = height;
+    window.parent.postMessage({
+      type: "koubousen-fort-calculator-height",
+      height
+    }, "*");
+  });
+}
+
+function initParentFrameAutoResize(){
+  notifyParentFrameHeight();
+
+  window.addEventListener("load", notifyParentFrameHeight);
+  window.addEventListener("resize", notifyParentFrameHeight);
+
+  const container = document.getElementById("container");
+  if(container && "ResizeObserver" in window){
+    const observer = new ResizeObserver(notifyParentFrameHeight);
+    observer.observe(container);
+    window.__koubousenFrameResizeObserver = observer;
+  }else if(container && "MutationObserver" in window){
+    const observer = new MutationObserver(notifyParentFrameHeight);
+    observer.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true
+    });
+    window.__koubousenFrameMutationObserver = observer;
+  }
+
+  setTimeout(notifyParentFrameHeight, 0);
+  setTimeout(notifyParentFrameHeight, 250);
+}
+
+document.addEventListener("DOMContentLoaded", initParentFrameAutoResize);
+
+window.runSim = runSim;
+document.addEventListener("DOMContentLoaded", init);
+</script>
 </body>
 </html>
