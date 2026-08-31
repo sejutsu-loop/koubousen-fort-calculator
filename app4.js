@@ -238,5 +238,77 @@ function refreshAll(){
   runSim();
 }
 
+
+/* Hatena blog iframe auto-height notification */
+let parentFrameHeightRaf = 0;
+let lastParentFrameHeight = 0;
+
+function measureParentFrameContentHeight(){
+  const container = document.getElementById("container");
+  if(container){
+    const rect = container.getBoundingClientRect();
+    const style = window.getComputedStyle(container);
+    const marginBottom = parseFloat(style.marginBottom) || 0;
+    return Math.ceil(rect.bottom + window.scrollY + marginBottom + 2);
+  }
+
+  if(document.body){
+    const rect = document.body.getBoundingClientRect();
+    return Math.ceil(rect.bottom + window.scrollY + 2);
+  }
+
+  return 0;
+}
+
+function notifyParentFrameHeight(){
+  if(window.parent === window) return;
+
+  if(parentFrameHeightRaf){
+    cancelAnimationFrame(parentFrameHeightRaf);
+  }
+
+  parentFrameHeightRaf = requestAnimationFrame(() => {
+    parentFrameHeightRaf = 0;
+
+    const height = measureParentFrameContentHeight();
+    if(!Number.isFinite(height) || height <= 0) return;
+    if(Math.abs(height - lastParentFrameHeight) < 2) return;
+
+    lastParentFrameHeight = height;
+    window.parent.postMessage({
+      type: "koubousen-fort-calculator-height",
+      height
+    }, "*");
+  });
+}
+
+function initParentFrameAutoResize(){
+  notifyParentFrameHeight();
+
+  window.addEventListener("load", notifyParentFrameHeight);
+  window.addEventListener("resize", notifyParentFrameHeight);
+
+  const container = document.getElementById("container");
+  if(container && "ResizeObserver" in window){
+    const observer = new ResizeObserver(notifyParentFrameHeight);
+    observer.observe(container);
+    window.__koubousenFrameResizeObserver = observer;
+  }else if(container && "MutationObserver" in window){
+    const observer = new MutationObserver(notifyParentFrameHeight);
+    observer.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true
+    });
+    window.__koubousenFrameMutationObserver = observer;
+  }
+
+  setTimeout(notifyParentFrameHeight, 0);
+  setTimeout(notifyParentFrameHeight, 250);
+}
+
+document.addEventListener("DOMContentLoaded", initParentFrameAutoResize);
+
 window.runSim = runSim;
 document.addEventListener("DOMContentLoaded", init);
